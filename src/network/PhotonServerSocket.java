@@ -10,7 +10,7 @@ PhotonServerSocket:
     Decodes messages received from client handler and also broadcasts codes out for client machines to be activated
 
 ClientHandler:
-    Deals with input data from client machines and passes of data received to PhotonServerSocket while running in a separate thread
+    Deals with input data from client machines and passes off data received to PhotonServerSocket while running in a separate thread
 
 */
 
