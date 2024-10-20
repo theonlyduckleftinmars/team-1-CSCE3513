@@ -5,9 +5,19 @@ import model.Player;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
+//Import event listener stuff for countdown timer
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class PlayActionScreen {
 
+	//Define the time (30 seconds)
+	private static final int TIME_REMAINING = 30;
+	private JLabel countdownTimer;
+	private Timer timer;
+	private int timeRemaining = TIME_REMAINING;
+	
+	
     private static final Color DARK_BACKGROUND = new Color(45, 45, 45);
     private static final Color LIGHT_TEXT = new Color(200, 200, 200);
 
@@ -24,6 +34,15 @@ public class PlayActionScreen {
         frame.setSize(800, 600);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
+        
+        //Create the countdown timer visual (top of the screen)
+        countdownTimer = new JLabel("Countdown to laser mayhem: " + timeRemaining, SwingConstants.CENTER);
+        countdownTimer.setFont(new Font("Arial", Font.BOLD, 24));
+        countdownTimer.setForeground(LIGHT_TEXT);
+        countdownTimer.setBackground(DARK_BACKGROUND);
+        countdownTimer.setOpaque(true);
+        frame.add(countdownTimer, BorderLayout.NORTH);
+        
 
         JPanel teamPanel = new JPanel(new GridLayout(1, 2));
 
@@ -36,7 +55,42 @@ public class PlayActionScreen {
         frame.add(teamPanel, BorderLayout.CENTER);
         frame.getContentPane().setBackground(DARK_BACKGROUND);
         frame.setVisible(true);
+        //Start the timer
+        startCountdownTimer();
     }
+    
+    private void startCountdownTimer()
+    {
+		//Create the timer (uses milliseconds, so 1000 = 1 second)
+		timer = new Timer(1000, new ActionListener(){
+			@Override
+			//A second has passed!
+			public void actionPerformed(ActionEvent e){
+				//Decrease the timer
+				timeRemaining--;
+				//Display updated countdown
+				countdownTimer.setText("Countdown to laser mayhem: " + timeRemaining);
+				//Make sure that bad boy stays in the middle of the screen
+				countdownTimer.setHorizontalAlignment(SwingConstants.CENTER);
+				//The timer hit 0! Stop the timer, start the game
+				if(timeRemaining <= 0)
+				{
+					timer.stop();
+					startGame();
+				}
+			}
+		});
+		
+		timer.start();
+	}
+	
+	//Timer has hit 0! Start the game
+	private void startGame()
+	{
+		//Don't have to start the game yet. Just display a message to the terminal for now!
+		System.out.print("Game started!");
+		//Call udpManager.startGame() here to transmit the 202 signal?
+	}
 
     private JPanel createTeamPanel(String teamName, List<Player> players, Color teamColor) {
         JPanel teamPanel = new JPanel(new BorderLayout());
