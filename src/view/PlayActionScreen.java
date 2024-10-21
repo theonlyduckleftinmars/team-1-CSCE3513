@@ -76,6 +76,9 @@ public class PlayActionScreen {
 				if(timeRemaining <= 0)
 				{
 					timer.stop();
+					//Display game starting message on the screen
+					countdownTimer.setText("GAME STARTING");
+					countdownTimer.setHorizontalAlignment(SwingConstants.CENTER);
 					startGame();
 				}
 			}
