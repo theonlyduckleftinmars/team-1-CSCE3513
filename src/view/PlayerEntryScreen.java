@@ -22,10 +22,11 @@ public class PlayerEntryScreen {
 
     private JTextField[][] greenTeamFields = new JTextField[NUM_PLAYERS][3];
     private JTextField[][] redTeamFields = new JTextField[NUM_PLAYERS][3];
+    private JFrame frame;
 
     public void display() {
-        JFrame frame = new JFrame("Laser Tag - Photon");
-        frame.setSize(800, 600);
+        JFrame frame = new JFrame("Laser Tag - Photon (USE F5 to SUBMIT and F12 to CLEAR PLAYERS");
+        frame.setSize(1000, 800);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
 
@@ -60,16 +61,50 @@ public class PlayerEntryScreen {
             }
         });
 
+
         JPanel bottomPanel = new JPanel();
         bottomPanel.setLayout(new GridLayout(1, 2));
         bottomPanel.add(enterNewPlayerButton);
         bottomPanel.add(submitPlayersButton);
 
+        setupKeyBindings(frame.getRootPane());
+
         frame.add(teamsPanel, BorderLayout.CENTER);
         frame.add(bottomPanel, BorderLayout.SOUTH);
+        frame.requestFocusInWindow();
         frame.getContentPane().setBackground(DARK_BACKGROUND);
         frame.setVisible(true);
     }
+
+    private void setupKeyBindings(JComponent component) {
+        InputMap inputMap = component.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap actionMap = component.getActionMap();
+        inputMap.put(KeyStroke.getKeyStroke("F12"), "clearPlayers");
+        inputMap.put(KeyStroke.getKeyStroke("F5"), "submitPlayers");
+        actionMap.put("clearPlayers", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                clearPlayers();
+            }
+        });
+        actionMap.put("submitPlayers", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                submitPlayers();
+            }
+        });
+    }
+
+    public void clearPlayers() {
+        for (int i = 0; i < NUM_PLAYERS; i++) {
+            for (int j = 0; j < 3; j++) {
+                greenTeamFields[i][j].setText("");
+                redTeamFields[i][j].setText("");
+            }
+        }
+        JOptionPane.showMessageDialog(frame, "All players have been cleared!", "Info", JOptionPane.INFORMATION_MESSAGE);
+    }
+
 
     private JPanel createTeamPanel(String teamName, Color teamColor, JTextField[][] playerFields) {
         JPanel teamPanel = new JPanel(new BorderLayout());
@@ -240,10 +275,15 @@ public class PlayerEntryScreen {
                 playerManager.insertPlayer(redPlayer);
             }
         }
+        JDialog dialog = new JDialog(frame, "ERROR SUBMITTING PLAYERS", true);
 
-        System.out.println("Players have been submitted to the database.");
+        if(greenTeamPlayers.isEmpty() && redTeamPlayers.isEmpty()) {
+            JOptionPane.showMessageDialog(dialog, "Players empty!", "Error", JOptionPane.ERROR_MESSAGE);
 
-        PlayActionScreen playActionScreen = new PlayActionScreen(greenTeamPlayers, redTeamPlayers);
-        playActionScreen.display();
+        } else {
+            PlayActionScreen playActionScreen = new PlayActionScreen(greenTeamPlayers, redTeamPlayers);
+            playActionScreen.display();
+        }
     }
+
 }
