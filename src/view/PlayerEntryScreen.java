@@ -1,112 +1,127 @@
 package view;
 
 import model.Player;
-import database.PlayerManager;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
+//Import event listener stuff for countdown timer
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.util.List;
-import java.util.ArrayList;
 
+public class PlayActionScreen {
 
-public class PlayerEntryScreen {
-
-    private static final int NUM_PLAYERS = 15;
+	//Sprint 4
+	private static final int GAME_TIMER = 360; //6 minutes = 360 seconds
+	private int gameTimer = GAME_TIMER;
+	//Define the time (30 seconds)
+	private static final int TIME_REMAINING = 30;
+	private JLabel countdownTimer;
+	private Timer timer;
+	private int timeRemaining = TIME_REMAINING;
+	
+	
     private static final Color DARK_BACKGROUND = new Color(45, 45, 45);
-    private static final Color DARKER_BACKGROUND = new Color(30, 30, 30);
     private static final Color LIGHT_TEXT = new Color(200, 200, 200);
 
-    private JTextField[][] greenTeamFields = new JTextField[NUM_PLAYERS][3];
-    private JTextField[][] redTeamFields = new JTextField[NUM_PLAYERS][3];
-    private JFrame frame;
+    private List<Player> greenTeamPlayers;
+    private List<Player> redTeamPlayers;
+
+    public PlayActionScreen(List<Player> greenTeamPlayers, List<Player> redTeamPlayers) {
+        this.greenTeamPlayers = greenTeamPlayers;
+        this.redTeamPlayers = redTeamPlayers;
+    }
 
     public void display() {
-        JFrame frame = new JFrame("Laser Tag - Photon (USE F5 to SUBMIT and F12 to CLEAR PLAYERS");
-        frame.setSize(1000, 800);
+        JFrame frame = new JFrame("Laser Tag - Play Action");
+        frame.setSize(800, 600);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
+        
+        //Create the countdown timer visual (top of the screen)
+        countdownTimer = new JLabel("Countdown to laser mayhem: " + timeRemaining, SwingConstants.CENTER);
+        countdownTimer.setFont(new Font("Arial", Font.BOLD, 24));
+        countdownTimer.setForeground(LIGHT_TEXT);
+        countdownTimer.setBackground(DARK_BACKGROUND);
+        countdownTimer.setOpaque(true);
+        frame.add(countdownTimer, BorderLayout.NORTH);
+        
 
-        JPanel greenTeamPanel = createTeamPanel("Green Team", Color.GREEN, greenTeamFields);
-        JPanel redTeamPanel = createTeamPanel("Red Team", Color.RED, redTeamFields);
+        JPanel teamPanel = new JPanel(new GridLayout(1, 2));
 
-        JPanel teamsPanel = new JPanel(new GridLayout(1, 2));
-        teamsPanel.add(greenTeamPanel);
-        teamsPanel.add(redTeamPanel);
-        teamsPanel.setBackground(DARK_BACKGROUND);
+        JPanel greenTeamPanel = createTeamPanel("Green Team", greenTeamPlayers, Color.GREEN);
+        JPanel redTeamPanel = createTeamPanel("Red Team", redTeamPlayers, Color.RED);
 
-        JButton enterNewPlayerButton = new JButton("Enter New Player");
-        JButton submitPlayersButton = new JButton("Submit Players");
+        teamPanel.add(greenTeamPanel);
+        teamPanel.add(redTeamPanel);
 
-        enterNewPlayerButton.setBackground(DARKER_BACKGROUND);
-        enterNewPlayerButton.setForeground(LIGHT_TEXT);
-        enterNewPlayerButton.setFocusPainted(false);
-        enterNewPlayerButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                openPlayerForm(frame);
-            }
-        });
-
-        submitPlayersButton.setBackground(DARKER_BACKGROUND);
-        submitPlayersButton.setForeground(LIGHT_TEXT);
-        submitPlayersButton.setFocusPainted(false);
-        submitPlayersButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                submitPlayers();
-            }
-        });
-
-
-        JPanel bottomPanel = new JPanel();
-        bottomPanel.setLayout(new GridLayout(1, 2));
-        bottomPanel.add(enterNewPlayerButton);
-        bottomPanel.add(submitPlayersButton);
-
-        setupKeyBindings(frame.getRootPane());
-
-        frame.add(teamsPanel, BorderLayout.CENTER);
-        frame.add(bottomPanel, BorderLayout.SOUTH);
-        frame.requestFocusInWindow();
+        frame.add(teamPanel, BorderLayout.CENTER);
         frame.getContentPane().setBackground(DARK_BACKGROUND);
         frame.setVisible(true);
+        //Start the timer
+        startCountdownTimer();
     }
+    
+    private void startCountdownTimer()
+    {
+		//Create the timer (uses milliseconds, so 1000 = 1 second)
+		timer = new Timer(1000, new ActionListener(){
+			@Override
+			//A second has passed!
+			public void actionPerformed(ActionEvent e){
+				//Decrease the timer
+				timeRemaining--;
+				//Display updated countdown
+				countdownTimer.setText("Countdown to laser mayhem: " + timeRemaining);
+				//Make sure that bad boy stays in the middle of the screen
+				countdownTimer.setHorizontalAlignment(SwingConstants.CENTER);
+				//The timer hit 0! Stop the timer, start the game
+				if(timeRemaining <= 0)
+				{
+					timer.stop();
+					countdownTimer.setText("GAME STARTING");
+					countdownTimer.setHorizontalAlignment(SwingConstants.CENTER);
+					startGame();
+				}
+			}
+		});
+		
+		timer.start();
+	}
+	private void startGameTimer()
+	{
+		timer = new Timer(1000, new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e){
+				gameTimer--;
+				countdownTimer.setText("Time remaining: " + gameTimer / 60 + " minutes " + gameTimer % 60 + " seconds");
+				countdownTimer.setHorizontalAlignment(SwingConstants.CENTER);
+				if(gameTimer <= 0)
+				{
+					timer.stop();
+					countdownTimer.setText("GAME ENDING");
+					countdownTimer.setHorizontalAlignment(SwingConstants.CENTER);
+					stopGame();
+				}
+			}
+		});
+		timer.start();
+	}
+	
+	//Timer has hit 0! Start the game
+	private void startGame()
+	{
+		//Don't have to start the game yet. Just display a message to the terminal for now!
+		System.out.print("Game started!");
+		startGameTimer();
+		//Call udpManager.startGame() here to transmit the 202 signal?
+	}
+	private void stopGame()
+	{
+		System.out.print("Game stopped");
+	}
 
-    private void setupKeyBindings(JComponent component) {
-        InputMap inputMap = component.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-        ActionMap actionMap = component.getActionMap();
-        inputMap.put(KeyStroke.getKeyStroke("F12"), "clearPlayers");
-        inputMap.put(KeyStroke.getKeyStroke("F5"), "submitPlayers");
-        actionMap.put("clearPlayers", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                clearPlayers();
-            }
-        });
-        actionMap.put("submitPlayers", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                submitPlayers();
-            }
-        });
-    }
-
-    public void clearPlayers() {
-        for (int i = 0; i < NUM_PLAYERS; i++) {
-            for (int j = 0; j < 3; j++) {
-                greenTeamFields[i][j].setText("");
-                redTeamFields[i][j].setText("");
-            }
-        }
-        JOptionPane.showMessageDialog(frame, "All players have been cleared!", "Info", JOptionPane.INFORMATION_MESSAGE);
-    }
-
-
-    private JPanel createTeamPanel(String teamName, Color teamColor, JTextField[][] playerFields) {
+    private JPanel createTeamPanel(String teamName, List<Player> players, Color teamColor) {
         JPanel teamPanel = new JPanel(new BorderLayout());
         teamPanel.setBorder(BorderFactory.createLineBorder(teamColor, 3));
         teamPanel.setBackground(DARK_BACKGROUND);
@@ -118,172 +133,18 @@ public class PlayerEntryScreen {
         teamLabel.setForeground(Color.WHITE);
         teamPanel.add(teamLabel, BorderLayout.NORTH);
 
-        JPanel playerInputPanel = new JPanel(new GridLayout(NUM_PLAYERS, 1, 5, 5));
-        playerInputPanel.setBackground(DARK_BACKGROUND);
+        JPanel playerListPanel = new JPanel(new GridLayout(players.size(), 1, 5, 5));
+        playerListPanel.setBackground(DARK_BACKGROUND);
 
-        for (int i = 0; i < NUM_PLAYERS; i++) {
-            JPanel row = new JPanel(new GridLayout(1, 3, 5, 5));
-            row.setBackground(DARK_BACKGROUND);
-
-            JTextField playerIdField = createInputField("Player ID", true);
-            JTextField codeNameField = createInputField("Code Name", false);
-            JTextField equipmentIdField = createInputField("Equipment ID", true);
-
-            row.add(playerIdField);
-            row.add(codeNameField);
-            row.add(equipmentIdField);
-
-            playerFields[i][0] = playerIdField;
-            playerFields[i][1] = codeNameField;
-            playerFields[i][2] = equipmentIdField;
-
-            playerInputPanel.add(row);
+        for (Player player : players) {
+            JLabel playerLabel = new JLabel("ID: " + player.getId() + " | Codename: " + player.getCodeName());
+            playerLabel.setForeground(LIGHT_TEXT);
+            playerLabel.setFont(new Font("Arial", Font.PLAIN, 18));
+            playerListPanel.add(playerLabel);
         }
 
-        teamPanel.add(playerInputPanel, BorderLayout.CENTER);
+        teamPanel.add(playerListPanel, BorderLayout.CENTER);
 
         return teamPanel;
     }
-
-    private JTextField createInputField(String title, boolean isNumeric) {
-        JTextField textField = new JTextField();
-        textField.setBackground(DARKER_BACKGROUND);
-        textField.setForeground(LIGHT_TEXT);
-        textField.setCaretColor(LIGHT_TEXT);
-        textField.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(LIGHT_TEXT, 1), title, 0, 0, null, LIGHT_TEXT));
-
-        if (isNumeric) {
-            textField.addKeyListener(new KeyAdapter() {
-                @Override
-                public void keyTyped(KeyEvent e) {
-                    char c = e.getKeyChar();
-                    if (!Character.isDigit(c) && c != '\b') {
-                        e.consume();
-                    }
-                }
-            });
-        }
-
-        return textField;
-    }
-
-    private void openPlayerForm(JFrame parentFrame) {
-        JDialog dialog = new JDialog(parentFrame, "New Player Form", true);
-        dialog.setSize(400, 300);
-        dialog.setLayout(new GridLayout(5, 2));
-
-        JLabel playerIdLabel = new JLabel("Player ID:");
-        JTextField playerIdField = new JTextField();
-        playerIdField.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-                char c = e.getKeyChar();
-                if (!Character.isDigit(c) && c != '\b') {
-                    e.consume();
-                }
-            }
-        });
-
-        JLabel codeNameLabel = new JLabel("Code Name:");
-        JTextField codeNameField = new JTextField();
-
-        JLabel equipmentIdLabel = new JLabel("Equipment ID:");
-        JTextField equipmentIdField = new JTextField();
-        equipmentIdField.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-                char c = e.getKeyChar();
-                if (!Character.isDigit(c) && c != '\b') {
-                    e.consume();
-                }
-            }
-        });
-
-        JLabel teamLabel = new JLabel("Team:");
-        String[] teams = {"Green", "Red"};
-        JComboBox<String> teamSelector = new JComboBox<>(teams);
-
-        JButton submitButton = new JButton("Submit");
-        submitButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String playerId = playerIdField.getText();
-                String codeName = codeNameField.getText();
-                String equipmentId = equipmentIdField.getText();
-                String team = (String) teamSelector.getSelectedItem();
-
-                if (!playerId.isEmpty() && !codeName.isEmpty()) {
-                    System.out.println("Equipment ID for UDP: " + equipmentId);
-                    updatePlayerEntry(playerId, codeName, equipmentId, team);
-                    dialog.dispose();
-                } else {
-                    JOptionPane.showMessageDialog(dialog, "Please fill all fields", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
-
-        dialog.add(playerIdLabel);
-        dialog.add(playerIdField);
-        dialog.add(codeNameLabel);
-        dialog.add(codeNameField);
-        dialog.add(equipmentIdLabel);
-        dialog.add(equipmentIdField);
-        dialog.add(teamLabel);
-        dialog.add(teamSelector);
-        dialog.add(new JLabel());
-        dialog.add(submitButton);
-
-        dialog.setVisible(true);
-    }
-
-    private void updatePlayerEntry(String playerId, String codeName, String equipmentId, String team) {
-        JTextField[][] playerFields = team.equals("Green") ? greenTeamFields : redTeamFields;
-
-	    //Adjust the font size so nothing get's cut off. Declare a font!
-        Font customFont = new Font("Arial", Font.PLAIN, 9);
-
-       	for (int i = 0; i < NUM_PLAYERS; i++) {
-            if (playerFields[i][0].getText().isEmpty()) {
-                playerFields[i][0].setText(playerId);
-                playerFields[i][1].setText(codeName);
-                playerFields[i][2].setText(equipmentId);
-               
-		//Added to set font sizes
-		playerFields[i][0].setFont(customFont);
-		playerFields[i][1].setFont(customFont);
-		playerFields[i][2].setFont(customFont);		
-		break;
-            }
-        }
-    }
-
-    private void submitPlayers() {
-        PlayerManager playerManager = new PlayerManager();
-        List<Player> greenTeamPlayers = new ArrayList<>();
-        List<Player> redTeamPlayers = new ArrayList<>();
-
-        for (int i = 0; i < NUM_PLAYERS; i++) {
-            if (!greenTeamFields[i][0].getText().isEmpty()) {
-                Player greenPlayer = new Player(Integer.parseInt(greenTeamFields[i][0].getText()), greenTeamFields[i][1].getText());
-                greenTeamPlayers.add(greenPlayer);
-                playerManager.insertPlayer(greenPlayer);
-            }
-            if (!redTeamFields[i][0].getText().isEmpty()) {
-                Player redPlayer = new Player(Integer.parseInt(redTeamFields[i][0].getText()), redTeamFields[i][1].getText());
-                redTeamPlayers.add(redPlayer);
-                playerManager.insertPlayer(redPlayer);
-            }
-        }
-        JDialog dialog = new JDialog(frame, "ERROR SUBMITTING PLAYERS", true);
-
-        if(greenTeamPlayers.isEmpty() && redTeamPlayers.isEmpty()) {
-            JOptionPane.showMessageDialog(dialog, "Players empty!", "Error", JOptionPane.ERROR_MESSAGE);
-
-        } else {
-            PlayActionScreen playActionScreen = new PlayActionScreen(greenTeamPlayers, redTeamPlayers);
-            playActionScreen.display();
-        }
-    }
-
 }
