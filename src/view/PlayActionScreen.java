@@ -11,6 +11,9 @@ import java.awt.event.ActionListener;
 
 public class PlayActionScreen {
 
+	//Sprint 4
+	private static final int GAME_TIMER = 360; //6 minutes = 360 seconds
+	private int gameTimer = GAME_TIMER;
 	//Define the time (30 seconds)
 	private static final int TIME_REMAINING = 30;
 	private JLabel countdownTimer;
@@ -76,7 +79,6 @@ public class PlayActionScreen {
 				if(timeRemaining <= 0)
 				{
 					timer.stop();
-					//Display game starting message on the screen
 					countdownTimer.setText("GAME STARTING");
 					countdownTimer.setHorizontalAlignment(SwingConstants.CENTER);
 					startGame();
@@ -86,13 +88,37 @@ public class PlayActionScreen {
 		
 		timer.start();
 	}
+	private void startGameTimer()
+	{
+		timer = new Timer(1000, new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e){
+				gameTimer--;
+				countdownTimer.setText("Time remaining: " + gameTimer / 60 + " minutes " + gameTimer % 60 + " seconds");
+				countdownTimer.setHorizontalAlignment(SwingConstants.CENTER);
+				if(gameTimer <= 0)
+				{
+					timer.stop();
+					countdownTimer.setText("GAME ENDING");
+					countdownTimer.setHorizontalAlignment(SwingConstants.CENTER);
+					stopGame();
+				}
+			}
+		});
+		timer.start();
+	}
 	
 	//Timer has hit 0! Start the game
 	private void startGame()
 	{
 		//Don't have to start the game yet. Just display a message to the terminal for now!
 		System.out.print("Game started!");
+		startGameTimer();
 		//Call udpManager.startGame() here to transmit the 202 signal?
+	}
+	private void stopGame()
+	{
+		System.out.print("Game stopped");
 	}
 
     private JPanel createTeamPanel(String teamName, List<Player> players, Color teamColor) {
