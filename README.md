@@ -16,7 +16,7 @@
    curl -s "https://get.sdkman.io" | bash
    sdk install java 22.0.2-amzn
 
-2. Please open a new terminal, or run the following in the existing one:
+2. Please open a new terminal, or run the following in the existing one, use your username for local username (obviously):
 
    ```bash
     source "/Users/<local username>/.sdkman/bin/sdkman-init.sh"
