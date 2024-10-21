@@ -26,7 +26,7 @@ This should output the installed version of java
 Install SDKMAN and Java 22:
    ```bash
    curl -s "https://get.sdkman.io" | bash
-   sdk install java 22.0.2-open
+   sdk install java 22.0.2-amzn
 
 4. If java 22 is not available, you can also check the available versions with:
 
