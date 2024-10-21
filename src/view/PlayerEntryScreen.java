@@ -205,12 +205,20 @@ public class PlayerEntryScreen {
     private void updatePlayerEntry(String playerId, String codeName, String equipmentId, String team) {
         JTextField[][] playerFields = team.equals("Green") ? greenTeamFields : redTeamFields;
 
-        for (int i = 0; i < NUM_PLAYERS; i++) {
+	    //Adjust the font size so nothing get's cut off. Declare a font!
+        Font customFont = new Font("Arial", Font.PLAIN, 9);
+
+       	for (int i = 0; i < NUM_PLAYERS; i++) {
             if (playerFields[i][0].getText().isEmpty()) {
                 playerFields[i][0].setText(playerId);
                 playerFields[i][1].setText(codeName);
                 playerFields[i][2].setText(equipmentId);
-                break;
+               
+		//Added to set font sizes
+		playerFields[i][0].setFont(customFont);
+		playerFields[i][1].setFont(customFont);
+		playerFields[i][2].setFont(customFont);		
+		break;
             }
         }
     }
