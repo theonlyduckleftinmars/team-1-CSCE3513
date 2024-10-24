@@ -1,10 +1,10 @@
 /*
-TODO: Figure out if laser tag machines are on local network or have own separate IPs
+TODO: Make sure this file is being called at all. Swapped port values as instructed by Prof Strother
 
 Docu:
 PORTS:
-    7500: Client sends data over this port for server to receive
-    7501: Server sends data over this port for client to receive
+    7501: Client sends data over this port for server to receive
+    7500: Server sends data over this port for client to receive
 
 PhotonServerSocket:
     Decodes messages received from client handler and also broadcasts codes out for client machines to be activated
@@ -26,8 +26,9 @@ import java.nio.ByteBuffer;
 
 public class PhotonServerSocket{
 
-    private static final int IN_PORT = 7500;
-    private static final int OUT_PORT = 7501;
+	//Swapped these two ports.
+    private static final int IN_PORT = 7501;
+    private static final int OUT_PORT = 7500;
 
     //managing the thread that listens for messages from clients
     private ThreadPoolExecutor exe = new ThreadPoolExecutor(1, 1, Long.MAX_VALUE, TimeUnit.DAYS, new ArrayBlockingQueue<>(0), new ThreadPoolExecutor.AbortPolicy());
@@ -43,16 +44,19 @@ public class PhotonServerSocket{
         try{
         sin = new DatagramSocket(IN_PORT);    //port it should receive data from
         sout = new DatagramSocket(OUT_PORT);    //port it should send data to
+        System.out.println("We have made some sockets");
         }catch(SocketException se){
             System.out.println("Error setting up sockets");
             se.printStackTrace();
         }
-
+		System.out.println("Calling AddClientHandler...");
         AddClientHandler();
 
     }
 
     private void AddClientHandler(){ //should run constantly so it can check for new clients and add them to the server will also throw exception on error
+		
+		System.out.println("BY GOLLY, YOU'VE MADE IT TO AddClientHandler");
 
         System.out.println("Client handler setup");
 
