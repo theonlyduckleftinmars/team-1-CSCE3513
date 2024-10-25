@@ -5,7 +5,7 @@ import network.*;
 public class Main {
     public static void main(String[] args) {
         SplashScreen splashScreen = new SplashScreen();
-        UDPManager udpManager = new UDPManager();
+        PhotonServerSocket = new PhotonServerSocket();
         PlayerEntryScreen playerEntryScreen = new PlayerEntryScreen();
 
         splashScreen.display();
