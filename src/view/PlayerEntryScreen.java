@@ -25,7 +25,7 @@ public class PlayerEntryScreen {
     private JFrame frame;
 
     public void display() {
-        JFrame frame = new JFrame("Laser Tag - Photon (USE F5 to SUBMIT and F12 to CLEAR PLAYERS)");
+        JFrame frame = new JFrame("Laser Tag - Photon");
         frame.setSize(1000, 800);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
@@ -61,11 +61,20 @@ public class PlayerEntryScreen {
             }
         });
 
+        // Create an instructional label
+        JLabel instructionLabel = new JLabel("<F5> to submit players and <F12> to clear players");
+        instructionLabel.setForeground(LIGHT_TEXT);
+        instructionLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        instructionLabel.setFont(new Font("Arial", Font.BOLD, 24));
 
-        JPanel bottomPanel = new JPanel();
-        bottomPanel.setLayout(new GridLayout(1, 2));
-        bottomPanel.add(enterNewPlayerButton);
-        bottomPanel.add(submitPlayersButton);
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2));
+        buttonPanel.add(enterNewPlayerButton);
+        buttonPanel.add(submitPlayersButton);
+
+        bottomPanel.add(buttonPanel, BorderLayout.CENTER);
+        bottomPanel.add(instructionLabel, BorderLayout.SOUTH);
+        bottomPanel.setBackground(DARK_BACKGROUND);
 
         setupKeyBindings(frame.getRootPane());
 
@@ -75,6 +84,7 @@ public class PlayerEntryScreen {
         frame.getContentPane().setBackground(DARK_BACKGROUND);
         frame.setVisible(true);
     }
+
 
     private void setupKeyBindings(JComponent component) {
         InputMap inputMap = component.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
