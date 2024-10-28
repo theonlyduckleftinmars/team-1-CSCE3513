@@ -1,6 +1,6 @@
 import view.PlayerEntryScreen;
 import view.SplashScreen;
-import network.*;
+import network.PhotonServerSocket;
 
 public class Main {
     public static void main(String[] args) {
