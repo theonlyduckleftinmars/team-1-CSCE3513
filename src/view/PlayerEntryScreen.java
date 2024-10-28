@@ -25,7 +25,7 @@ public class PlayerEntryScreen {
     private JFrame frame;
 
     public void display() {
-        JFrame frame = new JFrame("Laser Tag - Photon (USE F5 to SUBMIT and F12 to CLEAR PLAYERS");
+        JFrame frame = new JFrame("Laser Tag - Photon (USE F5 to SUBMIT and F12 to CLEAR PLAYERS)");
         frame.setSize(1000, 800);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());

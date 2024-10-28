@@ -13,6 +13,7 @@ ClientHandler:
     Deals with input data from client machines and passes off data received to PhotonServerSocket while running in a separate thread
 
 */
+package network;
 
 //UDP
 import java.net.DatagramPacket;
@@ -24,21 +25,20 @@ import java.util.concurrent.*;
 //Utility
 import java.nio.ByteBuffer;
 
-public class PhotonServerSocket{
+public class PhotonServerSocket {
 
     private static final int IN_PORT = 7500;
     private static final int OUT_PORT = 7501;
 
     //managing the thread that listens for messages from clients
-    private ThreadPoolExecutor exe = new ThreadPoolExecutor(1, 1, Long.MAX_VALUE, TimeUnit.DAYS, new ArrayBlockingQueue<>(0), new ThreadPoolExecutor.AbortPolicy());
+    private ThreadPoolExecutor exe = new ThreadPoolExecutor(1, 1, Long.MAX_VALUE, TimeUnit.DAYS, new ArrayBlockingQueue<>(10), new ThreadPoolExecutor.AbortPolicy());
 
     private DatagramSocket sin;
     private DatagramSocket sout;
     private ClientHandler ch;
 
 //--------------------------------------------------------------------------------------------------------------------------------
-
-    PhotonServerSocket(){ //will return an exception if error instead of actual server socket class
+public PhotonServerSocket(){ //will return an exception if error instead of actual server socket class
 
         try{
         sin = new DatagramSocket(IN_PORT);    //port it should receive data from
