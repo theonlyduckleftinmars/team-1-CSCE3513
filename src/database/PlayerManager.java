@@ -6,6 +6,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.sql.ResultSet;
 
 public class PlayerManager {
 
@@ -26,5 +29,24 @@ public class PlayerManager {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+    public List<Player> loadPlayers() {
+        List<Player> players = new ArrayList<>();
+        String sql = "SELECT id, codename FROM players";
+
+        try (Connection con = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+             PreparedStatement statement = con.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+
+            while (resultSet.next()) {
+                int id = resultSet.getInt("id");
+                String codename = resultSet.getString("codename");
+                players.add(new Player(id, codename));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return players;
     }
 }
