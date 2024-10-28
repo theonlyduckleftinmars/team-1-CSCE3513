@@ -73,7 +73,7 @@ public class PhotonServerSocket{
         byte byteArray[] = buffer.array();
         
         try{
-            DatagramPacket packet = new DatagramPacket(byteArray, byteArray.length, InetAddress.getLocalHost(), 7501);
+            DatagramPacket packet = new DatagramPacket(byteArray, byteArray.length, InetAddress.getLocalHost(), OUT_PORT);
             sout.send(packet);
         }catch(Exception e){
             System.out.println("Error sending out a code");
