@@ -8,6 +8,12 @@ import java.util.List;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+//Added for sound
+import javax.sound.sampled.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Random;
+
 public class PlayActionScreen {
 
 	//6 minutes = 360 seconds
@@ -25,6 +31,8 @@ public class PlayActionScreen {
     private List<Player> redTeamPlayers;
 
     private JTextArea actionLogArea;
+    
+    private Clip musicClip;
 
     public PlayActionScreen(List<Player> greenTeamPlayers, List<Player> redTeamPlayers) {
         this.greenTeamPlayers = greenTeamPlayers;
@@ -106,6 +114,11 @@ public class PlayActionScreen {
 				countdownTimer.setText("Countdown to laser mayhem: " + timeRemaining);
 				//Make sure that bad boy stays in the middle of the screen
 				countdownTimer.setHorizontalAlignment(SwingConstants.CENTER);
+				
+				if(timeRemaining == 15)
+				{
+					playMusic();
+				}
 				//The timer hit 0! Stop the timer, start the game
 				if(timeRemaining <= 0)
 				{
@@ -121,6 +134,8 @@ public class PlayActionScreen {
 	}
 	private void startGameTimer()
 	{
+		
+		
 		timer = new Timer(1000, new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e){
@@ -150,9 +165,44 @@ public class PlayActionScreen {
 	}
 	private void stopGame()
 	{
+		stopMusic();
 		System.out.print("Game stopped");
 	}
 	
+	private void playMusic()
+	{
+		System.out.println("Music should be starting");
+		
+		//stopMusic();
+		File musicFolder = new File("view/music/");
+		File[] musicFiles = musicFolder.listFiles((dir, name) -> name.endsWith(".wav"));
+		
+		if (musicFiles != null && musicFiles.length > 0)
+		{
+			Random random = new Random();
+			File randomTrack = musicFiles[random.nextInt(musicFiles.length)];
+			
+			try
+			{
+				AudioInputStream audioStream = AudioSystem.getAudioInputStream(randomTrack);
+				musicClip = AudioSystem.getClip();
+				musicClip.open(audioStream);
+				musicClip.start();
+				musicClip.loop(Clip.LOOP_CONTINUOUSLY);
+			}
+			catch(UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private void stopMusic()
+	{
+		if(musicClip != null && musicClip.isRunning()) {
+			musicClip.stop();
+			musicClip.close();
+		}
+	}
 	
     private void logAction(String action) {
         actionLogArea.append(action + "\n");
