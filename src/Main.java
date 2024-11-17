@@ -7,13 +7,12 @@ public class Main {
     public static void main(String[] args) {
         PlayerManager playerManager = new PlayerManager();
         SplashScreen splashScreen = new SplashScreen();
-        PhotonServerSocket photonServerSocket = new PhotonServerSocket();
+        PhotonServerSocket pss = new PhotonServerSocket();
         PlayerEntryScreen playerEntryScreen = new PlayerEntryScreen();
 
         splashScreen.display();
         playerEntryScreen.display();
+
         playerManager.loadPlayers();
-
-
     }
 }

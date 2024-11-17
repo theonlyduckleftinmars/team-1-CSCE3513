@@ -1,10 +1,8 @@
 /*
-TODO: Figure out if laser tag machines are on local network or have own separate IPs
-
 Docu:
 PORTS:
-    7500: Client sends data over this port for server to receive
-    7501: Server sends data over this port for client to receive
+    7501: Client sends data over this port for server to receive
+    7500: Server sends data over this port for client to receive
 
 PhotonServerSocket:
     Decodes messages received from client handler and also broadcasts codes out for client machines to be activated
@@ -12,6 +10,9 @@ PhotonServerSocket:
 ClientHandler:
     Deals with input data from client machines and passes off data received to PhotonServerSocket while running in a separate thread
 
+Hazards: Threadpool executor has a capacity of 1 so if somehow another thread is submitted to it and the current thread finishes execution that thread will start running whatever that thread is
+         IP Address may not be LocalHost
+         Base number is hardcoded as 43
 */
 package network;
 
@@ -27,15 +28,24 @@ import java.nio.ByteBuffer;
 
 public class PhotonServerSocket {
 
-    private static final int IN_PORT = 7500;
-    private static final int OUT_PORT = 7501;
+    private static final int IN_PORT = 7501;
+    private static final int OUT_PORT = 7500;
 
     //managing the thread that listens for messages from clients
-    private ThreadPoolExecutor exe = new ThreadPoolExecutor(1, 1, Long.MAX_VALUE, TimeUnit.DAYS, new ArrayBlockingQueue<>(10), new ThreadPoolExecutor.AbortPolicy());
+
+    private ThreadPoolExecutor exe = new ThreadPoolExecutor(1, 
+                                                            1, 
+                                                            Long.MAX_VALUE, 
+                                                            TimeUnit.DAYS, 
+                                                            new ArrayBlockingQueue<>(1));
+
 
     private DatagramSocket sin;
     private DatagramSocket sout;
     private ClientHandler ch;
+
+    private int baseHitterCode = -1;    //when -1 base hasn't been hit else it will be the code of the player who hit the base
+    private boolean baseHitToggle = false; //when false base hasn't been hit yet else the base has been hit
 
 //--------------------------------------------------------------------------------------------------------------------------------
 public PhotonServerSocket(){ //will return an exception if error instead of actual server socket class
@@ -73,7 +83,9 @@ public PhotonServerSocket(){ //will return an exception if error instead of actu
         byte byteArray[] = buffer.array();
         
         try{
-            DatagramPacket packet = new DatagramPacket(byteArray, byteArray.length, InetAddress.getLocalHost(), OUT_PORT);
+
+            DatagramPacket packet = new DatagramPacket(byteArray, byteArray.length, InetAddress.getLocalHost(), 7500);
+
             sout.send(packet);
         }catch(Exception e){
             System.out.println("Error sending out a code");
@@ -87,10 +99,20 @@ public PhotonServerSocket(){ //will return an exception if error instead of actu
 
     private void Decode(String code, ClientHandler ch){
         
+        System.out.println("Current base hitter: " + baseHitterCode + "\nCurrent toggle on base hits: " + baseHitToggle);
+        System.out.println("Code received was: " + code);
+
         if(code.contains(":")){
             String players[] = code.split(":");
             if(players.length == 2)
                 System.out.println("Player " + players[1] + " was hit");  //get everything to right of semicolon which is the code of hit person
+            if(Integer.parseInt(players[1]) == 43){
+                System.out.println("Player " + players[0] + " has hit the base");
+                if(!baseHitToggle && baseHitterCode == -1){
+                    SetBaseHitter(Integer.parseInt(players[0]));
+                }
+
+            }
         }else{
             System.out.println("Code recieved from client did not match currently compatible codes: " + code);
         }
@@ -120,6 +142,39 @@ public PhotonServerSocket(){ //will return an exception if error instead of actu
             System.out.println("There was an exception to restarting a thread");
             e.printStackTrace();
         }
+
+    }
+
+//--------------------------------------------------------------------------------------------------------------------------------
+//Getters and setters
+
+    public void RemoveBaseHitter(){
+
+        baseHitToggle = false;
+        baseHitterCode = -1;
+
+    }
+
+    private void SetBaseToggle(boolean toggle){
+
+        baseHitToggle = toggle;
+
+    }
+
+    private void SetBaseHitter(int code){
+
+        if(code != 43){
+            baseHitterCode = code;
+            SetBaseToggle(true);
+        }
+        else
+            System.out.println("Base cannot hit another base code wasn't acted upon");
+
+    }
+
+    public int getHitterCode(){
+
+        return baseHitterCode;
 
     }
 
@@ -182,6 +237,18 @@ public PhotonServerSocket(){ //will return an exception if error instead of actu
     
     }
 
+//--------------------------------------------------------------------------------------------------------------------------------
+/*
+public static void main(String args[]){
+
+        try{
+            PhotonServerSocket ps = new PhotonServerSocket();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    
+    }
+*/
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
