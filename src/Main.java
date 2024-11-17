@@ -10,6 +10,5 @@ public class Main {
 
         splashScreen.display();
         playerEntryScreen.display();
-        udpManager.receiveHits();
     }
 }
