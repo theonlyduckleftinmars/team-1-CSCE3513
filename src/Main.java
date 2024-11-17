@@ -14,5 +14,7 @@ public class Main {
         playerEntryScreen.display();
 
         playerManager.loadPlayers();
+
+        pss.run();
     }
 }
