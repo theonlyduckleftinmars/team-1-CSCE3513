@@ -7,11 +7,13 @@ cd src || exit
 CLASSPATH=".:../lib/postgresql-42.7.4.jar"
 
 # Compile all Java files
-
-javac -cp $CLASSPATH view/*.java model/*.java database/*.java controller/*.java network/PhotonServerSocket.java
+javac -cp $CLASSPATH view/*.java model/*.java database/*.java controller/*.java network/*.java
 
 # Run the main program
 java -cp $CLASSPATH Main
+
+# Run the TrafficGenerator
+java -cp $CLASSPATH network.TrafficGenerator
 
 # Navigate back to the root directory
 cd ..
