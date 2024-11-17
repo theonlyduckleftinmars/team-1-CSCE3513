@@ -36,12 +36,11 @@ public class PhotonClientSocket{
             if("exit".equalsIgnoreCase(userInput)){
                 break;
             }
-            System.out.println("Input: " + userInput + " Sent over port 7501 to address: " + InetAddress.getLocalHost());
+            System.out.println("Input: " + userInput + " Sent over port 7501 to address: 192.168.0.0");
 
             byte arr[] = userInput.getBytes();
     
-            DatagramPacket packet = new DatagramPacket(arr, arr.length, InetAddress.getLocalHost(), 7501);
-
+            DatagramPacket packet = new DatagramPacket(arr, arr.length, InetAddress.getByName("192.168.0.0"), 7501);
 
             ssout.send(packet);
 
