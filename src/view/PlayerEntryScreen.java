@@ -15,6 +15,7 @@ import java.util.ArrayList;
 
 public class PlayerEntryScreen {
 
+    private JButton loadPlayersButton;
     private static final int NUM_PLAYERS = 15;
     private static final Color DARK_BACKGROUND = new Color(45, 45, 45);
     private static final Color DARKER_BACKGROUND = new Color(30, 30, 30);
@@ -25,7 +26,7 @@ public class PlayerEntryScreen {
     private JFrame frame;
 
     public void display() {
-        JFrame frame = new JFrame("Laser Tag - Photon (USE F5 to SUBMIT and F12 to CLEAR PLAYERS");
+        JFrame frame = new JFrame("Laser Tag - Photon");
         frame.setSize(1000, 800);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
@@ -40,6 +41,7 @@ public class PlayerEntryScreen {
 
         JButton enterNewPlayerButton = new JButton("Enter New Player");
         JButton submitPlayersButton = new JButton("Submit Players");
+        loadPlayersButton = new JButton("Load Players");
 
         enterNewPlayerButton.setBackground(DARKER_BACKGROUND);
         enterNewPlayerButton.setForeground(LIGHT_TEXT);
@@ -61,11 +63,32 @@ public class PlayerEntryScreen {
             }
         });
 
+        loadPlayersButton.setFont(new Font("Arial", Font.PLAIN, 14));
+        loadPlayersButton.setBackground(DARKER_BACKGROUND);
+        loadPlayersButton.setForeground(LIGHT_TEXT);
+        loadPlayersButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                loadPlayers();
+            }
+        });
 
-        JPanel bottomPanel = new JPanel();
-        bottomPanel.setLayout(new GridLayout(1, 2));
-        bottomPanel.add(enterNewPlayerButton);
-        bottomPanel.add(submitPlayersButton);
+
+        // Create an instructional label
+        JLabel instructionLabel = new JLabel("<F5> to submit players and <F12> to clear players");
+        instructionLabel.setForeground(LIGHT_TEXT);
+        instructionLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        instructionLabel.setFont(new Font("Arial", Font.BOLD, 24));
+
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2));
+        buttonPanel.add(enterNewPlayerButton);
+        buttonPanel.add(submitPlayersButton);
+        buttonPanel.add(loadPlayersButton);
+
+        bottomPanel.add(buttonPanel, BorderLayout.CENTER);
+        bottomPanel.add(instructionLabel, BorderLayout.SOUTH);
+        bottomPanel.setBackground(DARK_BACKGROUND);
 
         setupKeyBindings(frame.getRootPane());
 
@@ -75,6 +98,7 @@ public class PlayerEntryScreen {
         frame.getContentPane().setBackground(DARK_BACKGROUND);
         frame.setVisible(true);
     }
+
 
     private void setupKeyBindings(JComponent component) {
         InputMap inputMap = component.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
@@ -93,6 +117,79 @@ public class PlayerEntryScreen {
                 submitPlayers();
             }
         });
+    }
+
+    private void loadPlayers() {
+        PlayerManager playerManager = new PlayerManager();
+        List<Player> players = playerManager.loadPlayers();
+
+        JDialog dialog = new JDialog(frame, "Select Players and Assign Teams", true);
+        dialog.setSize(600, 400);
+        dialog.setLayout(new BorderLayout());
+
+        DefaultListModel<Player> listModel = new DefaultListModel<>();
+        for (Player player : players) {
+            listModel.addElement(player);
+        }
+
+        JList<Player> playerList = new JList<>(listModel);
+        playerList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        playerList.setCellRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                Player player = (Player) value;
+                label.setText("ID: " + player.getId() + " | Codename: " + player.getCodeName());
+                return label;
+            }
+        });
+
+        JScrollPane scrollPane = new JScrollPane(playerList);
+        dialog.add(scrollPane, BorderLayout.CENTER);
+
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2));
+        JButton assignGreenTeamButton = new JButton("Assign to Green Team");
+        JButton assignRedTeamButton = new JButton("Assign to Red Team");
+
+        assignGreenTeamButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Player selectedPlayer = playerList.getSelectedValue();
+                if (selectedPlayer != null) {
+                    assignPlayerToTeam(selectedPlayer, "Green");
+                    listModel.removeElement(selectedPlayer);
+                }
+            }
+        });
+
+        assignRedTeamButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Player selectedPlayer = playerList.getSelectedValue();
+                if (selectedPlayer != null) {
+                    assignPlayerToTeam(selectedPlayer, "Red");
+                    listModel.removeElement(selectedPlayer);
+                }
+            }
+        });
+
+        buttonPanel.add(assignGreenTeamButton);
+        buttonPanel.add(assignRedTeamButton);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        dialog.setVisible(true);
+    }
+
+    private void assignPlayerToTeam(Player player, String team) {
+        JTextField[][] playerFields = team.equals("Green") ? greenTeamFields : redTeamFields;
+
+        for (int i = 0; i < NUM_PLAYERS; i++) {
+            if (playerFields[i][0].getText().isEmpty()) {
+                playerFields[i][0].setText(String.valueOf(player.getId()));
+                playerFields[i][1].setText(player.getCodeName());
+                break;
+            }
+        }
     }
 
     public void clearPlayers() {

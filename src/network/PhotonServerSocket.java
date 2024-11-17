@@ -14,6 +14,7 @@ Hazards: Threadpool executor has a capacity of 1 so if somehow another thread is
          IP Address may not be LocalHost
          Base number is hardcoded as 43
 */
+package network;
 
 //UDP
 import java.net.DatagramPacket;
@@ -25,17 +26,19 @@ import java.util.concurrent.*;
 //Utility
 import java.nio.ByteBuffer;
 
-public class PhotonServerSocket{
+public class PhotonServerSocket {
 
     private static final int IN_PORT = 7501;
     private static final int OUT_PORT = 7500;
 
     //managing the thread that listens for messages from clients
+
     private ThreadPoolExecutor exe = new ThreadPoolExecutor(1, 
                                                             1, 
                                                             Long.MAX_VALUE, 
                                                             TimeUnit.DAYS, 
                                                             new ArrayBlockingQueue<>(1));
+
 
     private DatagramSocket sin;
     private DatagramSocket sout;
@@ -45,8 +48,7 @@ public class PhotonServerSocket{
     private boolean baseHitToggle = false; //when false base hasn't been hit yet else the base has been hit
 
 //--------------------------------------------------------------------------------------------------------------------------------
-
-    PhotonServerSocket(){ //will return an exception if error instead of actual server socket class
+public PhotonServerSocket(){ //will return an exception if error instead of actual server socket class
 
         try{
         sin = new DatagramSocket(IN_PORT);    //port it should receive data from
@@ -81,7 +83,9 @@ public class PhotonServerSocket{
         byte byteArray[] = buffer.array();
         
         try{
+
             DatagramPacket packet = new DatagramPacket(byteArray, byteArray.length, InetAddress.getLocalHost(), 7500);
+
             sout.send(packet);
         }catch(Exception e){
             System.out.println("Error sending out a code");
