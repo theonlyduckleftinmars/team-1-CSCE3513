@@ -147,6 +147,12 @@ public class PlayerEntryScreen {
         JScrollPane scrollPane = new JScrollPane(playerList);
         dialog.add(scrollPane, BorderLayout.CENTER);
 
+        JPanel inputPanel = new JPanel(new GridLayout(2, 1));
+        JLabel hardwareIdLabel = new JLabel("Hardware ID:");
+        JTextField hardwareIdField = new JTextField();
+        inputPanel.add(hardwareIdLabel);
+        inputPanel.add(hardwareIdField);
+
         JPanel buttonPanel = new JPanel(new GridLayout(1, 2));
         JButton assignGreenTeamButton = new JButton("Assign to Green Team");
         JButton assignRedTeamButton = new JButton("Assign to Red Team");
@@ -155,9 +161,12 @@ public class PlayerEntryScreen {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Player selectedPlayer = playerList.getSelectedValue();
-                if (selectedPlayer != null) {
-                    assignPlayerToTeam(selectedPlayer, "Green");
+                String hardwareId = hardwareIdField.getText();
+                if (selectedPlayer != null && !hardwareId.isEmpty()) {
+                    assignPlayerToTeam(selectedPlayer, "Green", hardwareId);
                     listModel.removeElement(selectedPlayer);
+                } else {
+                    JOptionPane.showMessageDialog(dialog, "Please select a player and enter a hardware ID.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -166,27 +175,33 @@ public class PlayerEntryScreen {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Player selectedPlayer = playerList.getSelectedValue();
-                if (selectedPlayer != null) {
-                    assignPlayerToTeam(selectedPlayer, "Red");
+                String hardwareId = hardwareIdField.getText();
+                if (selectedPlayer != null && !hardwareId.isEmpty()) {
+                    assignPlayerToTeam(selectedPlayer, "Red", hardwareId);
                     listModel.removeElement(selectedPlayer);
+                } else {
+                    JOptionPane.showMessageDialog(dialog, "Please select a player and enter a hardware ID.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
 
         buttonPanel.add(assignGreenTeamButton);
         buttonPanel.add(assignRedTeamButton);
+
+        dialog.add(inputPanel, BorderLayout.NORTH);
         dialog.add(buttonPanel, BorderLayout.SOUTH);
 
         dialog.setVisible(true);
     }
 
-    private void assignPlayerToTeam(Player player, String team) {
+    private void assignPlayerToTeam(Player player, String team, String hardwareId) {
         JTextField[][] playerFields = team.equals("Green") ? greenTeamFields : redTeamFields;
 
         for (int i = 0; i < NUM_PLAYERS; i++) {
             if (playerFields[i][0].getText().isEmpty()) {
                 playerFields[i][0].setText(String.valueOf(player.getId()));
                 playerFields[i][1].setText(player.getCodeName());
+                playerFields[i][2].setText(hardwareId);
                 break;
             }
         }
