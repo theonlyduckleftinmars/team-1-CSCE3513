@@ -144,29 +144,35 @@ public class PhotonServerSocket{
 //--------------------------------------------------------------------------------------------------------------------------------
 //Getters and setters
 
-public void RemoveBaseHitter(){
+    public void RemoveBaseHitter(){
 
-    baseHitToggle = false;
-    baseHitterCode = -1;
+        baseHitToggle = false;
+        baseHitterCode = -1;
 
-}
-
-private void SetBaseToggle(boolean toggle){
-
-    baseHitToggle = toggle;
-
-}
-
-private void SetBaseHitter(int code){
-
-    if(code != 43){
-        baseHitterCode = code;
-        SetBaseToggle(true);
     }
-    else
-        System.out.println("Base cannot hit another base code wasn't acted upon");
 
-}
+    private void SetBaseToggle(boolean toggle){
+
+        baseHitToggle = toggle;
+
+    }
+
+    private void SetBaseHitter(int code){
+
+        if(code != 43){
+            baseHitterCode = code;
+            SetBaseToggle(true);
+        }
+        else
+            System.out.println("Base cannot hit another base code wasn't acted upon");
+
+    }
+
+    public int getHitterCode(){
+
+        return baseHitterCode;
+
+    }
 
 //--------------------------------------------------------------------------------------------------------------------------------
 //CLIENT HANDLER
