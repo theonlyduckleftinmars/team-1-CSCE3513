@@ -133,24 +133,48 @@ public class PlayActionScreen {
 		timer.start();
 	}
 	private void startGameTimer()
-	{
-		
-		
+	private void startCountdownTimer()
+    {
+		//Create the timer (uses milliseconds, so 1000 = 1 second)
 		timer = new Timer(1000, new ActionListener(){
 			@Override
+			//A second has passed!
 			public void actionPerformed(ActionEvent e){
-				gameTimer--;
-				countdownTimer.setText("Time remaining: " + gameTimer / 60 + " minutes " + gameTimer % 60 + " seconds");
+				//Decrease the timer
+				timeRemaining--;
+				//Display updated countdown
+				countdownTimer.setText("Countdown to laser mayhem: " + timeRemaining);
+				//Make sure that bad boy stays in the middle of the screen
 				countdownTimer.setHorizontalAlignment(SwingConstants.CENTER);
-				if(gameTimer <= 0)
+				
+				if(timeRemaining == 15)
 				{
-					timer.stop();
-					countdownTimer.setText("GAME ENDING");
+					playMusic();
+				}
+				//The timer hit 0! Stop the timer, start the game
+				else if(timeRemaining == 0)
+				{
+					//timer.stop();
+				
+					countdownTimer.setText("GAME STARTING");
 					countdownTimer.setHorizontalAlignment(SwingConstants.CENTER);
-					stopGame();
+					//Stop timer for a 10 second delay
+					timer.stop();
+					//Display game starting message
+					Timer gameStartingTimer = new Timer(10000, new ActionListener(){
+						@Override
+						//10 seconds are over. Start the game
+						public void actionPerformed(ActionEvent e){
+							startGame();
+						}
+					});
+					gameStartingTimer.setRepeats(false);
+					gameStartingTimer.start();
+					
 				}
 			}
 		});
+		
 		timer.start();
 	}
 	
