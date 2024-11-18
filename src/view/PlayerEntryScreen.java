@@ -128,6 +128,7 @@ public class PlayerEntryScreen {
         dialog.setLayout(new BorderLayout());
 
         DefaultListModel<Player> listModel = new DefaultListModel<>();
+	//TODO PhotonServerSocket.AssignCode(int hardwareID) note not a static method so you'll need a instance of the class to call method
         for (Player player : players) {
             listModel.addElement(player);
         }
@@ -215,6 +216,7 @@ public class PlayerEntryScreen {
             }
         }
         JOptionPane.showMessageDialog(frame, "All players have been cleared!", "Info", JOptionPane.INFORMATION_MESSAGE);
+	//TODO call PhotonServerSocket.RemoveBaseHitter() note not a static method so you'll need an instance of the class to call it
     }
 
 
