@@ -84,6 +84,8 @@ public class PhotonServerSocket {
                 logs.add(new int[]{Integer.parseInt(players[0], 0)});
                 logs.add(new int[]{Integer.parseInt(players[1], 1)});
 
+                assignCode(Integer.parseInt(players[1]));
+
             }
         } else {
             System.out.println("Code received from client did not match currently compatible codes: " + code);
