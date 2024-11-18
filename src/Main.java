@@ -15,12 +15,6 @@ public class Main {
 
         playerManager.loadPlayers();
 
-        while (true) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+
     }
 }

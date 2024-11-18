@@ -28,6 +28,7 @@ public class PhotonServerSocket {
     public PhotonServerSocket() { //will return an exception if error instead of actual server socket class
         try {
             sin = new DatagramSocket(IN_PORT);    //port it should receive data from
+            sout = new DatagramSocket();
             System.out.println("Server input socket initialized: " + sin);
         } catch (SocketException se) {
             System.out.println("Error setting up sockets");
@@ -48,9 +49,8 @@ public class PhotonServerSocket {
     //Server functions for server managing handlers (server to handler interactions)
     //use to send codes out to clients
     public void assignCode(int code) {
-        ByteBuffer buffer = ByteBuffer.allocate(4);
-        buffer.putInt(code);
-        byte byteArray[] = buffer.array();
+        String codeString = String.valueOf(code);
+        byte[] byteArray = codeString.getBytes();
 
         try {
             DatagramPacket packet = new DatagramPacket(byteArray, byteArray.length, InetAddress.getLocalHost(), OUT_PORT);
@@ -66,18 +66,48 @@ public class PhotonServerSocket {
         System.out.println("Current base hitter: " + baseHitterCode + "\nCurrent toggle on base hits: " + baseHitToggle);
         System.out.println("Code received was: " + code);
 
+        String response = null;
         if (code.contains(":")) {
             String players[] = code.split(":");
-            if (players.length == 2)
-                System.out.println("Player " + players[1] + " was hit");  //get everything to right of semicolon which is the code of hit person
-            if (Integer.parseInt(players[1]) == 43) {
-                System.out.println("Player " + players[0] + " has hit the base");
-                if (!baseHitToggle && baseHitterCode == -1) {
-                    SetBaseHitter(Integer.parseInt(players[0]));
+            if (players.length == 2) {
+                String shooter = players[0];
+                String target = players[1];
+                System.out.println("Player " + target + " was hit by Player " + shooter);
+
+                // Base hit logic
+                if (Integer.parseInt(target) == 43) {
+                    System.out.println("Player " + shooter + " has hit the base");
+                    if (!baseHitToggle && baseHitterCode == -1) {
+                        SetBaseHitter(Integer.parseInt(shooter));
+                    }
+                    response = "Base hit by Player " + shooter;
+                } else if (Integer.parseInt(target) == 53) {
+                    response = "Green base hit by Player " + shooter;
+                } else {
+                    response = "Player " + shooter + " hit Player " + target;
                 }
             }
+        } else if (code.equals("202")) {
+            response = "Game started!";
+        } else if (code.equals("221")) {
+            response = "Game ended!";
         } else {
-            System.out.println("Code received from client did not match currently compatible codes: " + code);
+            response = "Invalid code received: " + code;
+        }
+        // Send response back to the client
+        if (response != null) {
+            sendResponse(response, ch);
+        }
+    }
+    private void sendResponse(String message, ClientHandler ch) {
+        try {
+            byte[] buffer = message.getBytes();
+            DatagramPacket responsePacket = new DatagramPacket(buffer, buffer.length, InetAddress.getLocalHost(), OUT_PORT);
+            sout.send(responsePacket);
+            System.out.println("Response sent: " + message);
+        } catch (Exception e) {
+            System.out.println("Error sending response: " + message);
+            e.printStackTrace();
         }
     }
 

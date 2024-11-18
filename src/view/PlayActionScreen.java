@@ -2,15 +2,22 @@ package view;
 
 import model.Player;
 
-import network.TrafficGenerator;
+import network.PhotonServerSocket;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.stream.*;
+import java.util.HashMap;
+import java.util.Map;
 
-//Added for sound
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.util.Random;
+import java.util.Scanner;
+
 import javax.sound.sampled.*;
 import java.io.File;
 import java.io.IOException;
@@ -30,14 +37,15 @@ public class PlayActionScreen {
 
 	private List<Player> greenTeamPlayers;
 	private List<Player> redTeamPlayers;
+	private Map<Integer, String> equipmentMap;
 
 	private JTextArea actionLogArea;
 	private Clip musicClip;
-	private TrafficGenerator trafficGenerator;
 
-	public PlayActionScreen(List<Player> greenTeamPlayers, List<Player> redTeamPlayers) {
+	public PlayActionScreen(List<Player> greenTeamPlayers, List<Player> redTeamPlayers, Map<Integer, String> equipmentMap) {
 		this.greenTeamPlayers = greenTeamPlayers;
 		this.redTeamPlayers = redTeamPlayers;
+		this.equipmentMap = equipmentMap;
 	}
 
 	public void display() {
@@ -123,15 +131,73 @@ public class PlayActionScreen {
 
 	private void startGame() {
 		System.out.print("Game started!");
-		logAction("Player1 shot Player2");
-		logAction("Player3 shot Player4");
 
-		// Initialize and start the TrafficGenerator
-		List<String> redPlayers = redTeamPlayers.stream().map(player -> String.valueOf(player.getId())).collect(Collectors.toList());
-		List<String> greenPlayers = greenTeamPlayers.stream().map(player -> String.valueOf(player.getId())).collect(Collectors.toList());
+		PhotonServerSocket pss = new PhotonServerSocket();
+		pss.assignCode(202);
+		logAction("Game started! Signal 202 sent.");
 
-		trafficGenerator = new TrafficGenerator(redPlayers, greenPlayers);
-		new Thread(() -> trafficGenerator.start()).start();
+		new Thread(() -> {
+			try {
+				Random random = new Random();
+				int counter = 0;
+
+				while (true) {
+					Player greenPlayer = greenTeamPlayers.get(random.nextInt(greenTeamPlayers.size()));
+					Player redPlayer = redTeamPlayers.get(random.nextInt(redTeamPlayers.size()));
+					String greenEquipmentId = equipmentMap.get(greenPlayer.getId());
+					String redEquipmentId = equipmentMap.get(redPlayer.getId());
+
+					if (!isNumeric(greenEquipmentId) || !isNumeric(redEquipmentId)) {
+						logAction("Invalid equipment ID detected. Skipping event.");
+						continue;
+					}
+
+					String message;
+					if (random.nextBoolean()) {
+						message = redPlayer.getCodeName() + " hit " + greenPlayer.getCodeName();
+					} else {
+						message = greenPlayer.getCodeName() + " hit " + redPlayer.getCodeName();
+					}
+
+
+					if (counter == 10) {
+						message = redPlayer.getCodeName() + " hit the base!";
+					}
+					if (counter == 20) {
+						message = greenPlayer.getCodeName() + " hit the base!";
+					}
+
+					logAction(message);
+
+					pss.assignCode(Integer.parseInt(greenEquipmentId));
+
+
+					Thread.sleep(random.nextInt(3000) + 1000);
+
+
+					if (counter >= 30) {
+						logAction("Game ended!");
+						pss.assignCode(221);
+						break;
+					}
+					counter++;
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}).start();
+	}
+
+	private boolean isNumeric(String str) {
+		if (str == null || str.isEmpty()) {
+			return false;
+		}
+		try {
+			Integer.parseInt(str);
+			return true;
+		} catch (NumberFormatException e) {
+			return false;
+		}
 	}
 
 	private void stopGame() {

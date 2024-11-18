@@ -1,4 +1,3 @@
-// TrafficGenerator.java
 package network;
 
 import java.net.DatagramPacket;
@@ -83,7 +82,7 @@ public class TrafficGenerator {
                     break;
                 }
 
-                Thread.sleep(random.nextInt(3) * 1000);
+                Thread.sleep(random.nextInt(3) * 100);
             }
 
             System.out.println("Program complete");

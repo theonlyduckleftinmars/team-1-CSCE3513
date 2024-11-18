@@ -11,6 +11,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class PlayerEntryScreen {
@@ -369,33 +371,39 @@ public class PlayerEntryScreen {
             }
         }
     }
-
     private void submitPlayers() {
         PlayerManager playerManager = new PlayerManager();
         List<Player> greenTeamPlayers = new ArrayList<>();
         List<Player> redTeamPlayers = new ArrayList<>();
+        Map<Integer, String> equipmentMap = new HashMap<>(); // Map to store equipment IDs
 
         for (int i = 0; i < NUM_PLAYERS; i++) {
             if (!greenTeamFields[i][0].getText().isEmpty()) {
-                Player greenPlayer = new Player(Integer.parseInt(greenTeamFields[i][0].getText()), greenTeamFields[i][1].getText());
+                int id = Integer.parseInt(greenTeamFields[i][0].getText());
+                String codename = greenTeamFields[i][1].getText();
+                String equipmentId = greenTeamFields[i][2].getText();
+                Player greenPlayer = new Player(id, codename);
                 greenTeamPlayers.add(greenPlayer);
+                equipmentMap.put(id, equipmentId); // Add equipment ID to the map
                 playerManager.insertPlayer(greenPlayer);
             }
             if (!redTeamFields[i][0].getText().isEmpty()) {
-                Player redPlayer = new Player(Integer.parseInt(redTeamFields[i][0].getText()), redTeamFields[i][1].getText());
+                int id = Integer.parseInt(redTeamFields[i][0].getText());
+                String codename = redTeamFields[i][1].getText();
+                String equipmentId = redTeamFields[i][2].getText();
+                Player redPlayer = new Player(id, codename);
                 redTeamPlayers.add(redPlayer);
+                equipmentMap.put(id, equipmentId); // Add equipment ID to the map
                 playerManager.insertPlayer(redPlayer);
             }
         }
         JDialog dialog = new JDialog(frame, "ERROR SUBMITTING PLAYERS", true);
 
-        if(greenTeamPlayers.isEmpty() && redTeamPlayers.isEmpty()) {
+        if (greenTeamPlayers.isEmpty() && redTeamPlayers.isEmpty()) {
             JOptionPane.showMessageDialog(dialog, "Players empty!", "Error", JOptionPane.ERROR_MESSAGE);
-
         } else {
-            PlayActionScreen playActionScreen = new PlayActionScreen(greenTeamPlayers, redTeamPlayers);
+            PlayActionScreen playActionScreen = new PlayActionScreen(greenTeamPlayers, redTeamPlayers, equipmentMap);
             playActionScreen.display();
         }
     }
-
 }
