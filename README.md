@@ -56,11 +56,13 @@
    ```bash
    ./run.bash
 
-## To simulate traffic between players (From initial directory):
+## To simulate traffic between players:
+Navigate to src/network
 
 1. Compile TrafficGenerator.java:
    ```bash
-   javac network.TrafficGenerator.java
+   javac TrafficGenerator.java
 2. Run TrafficGenerator.java:
    ```bash
-   java network.TrafficGenerator.java
+   java TrafficGenerator.java
+3. Your simulation is now ready to receive traffic from the game software!
