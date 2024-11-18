@@ -1,6 +1,7 @@
 package view;
 
 import model.Player;
+import network.PhotonServerSocket;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,22 +20,22 @@ public class PlayActionScreen {
 	//6 minutes = 360 seconds
 	private static final int GAME_TIMER = 360;
 	private int gameTimer = GAME_TIMER;
-    	private static final int TIME_REMAINING = 30;
-    	private JLabel countdownTimer;
-   	private Timer timer;
-    	private int timeRemaining = TIME_REMAINING;
+    private static final int TIME_REMAINING = 30;
+    private JLabel countdownTimer;
+    private Timer timer;
+    private int timeRemaining = TIME_REMAINING;
 
-    	private static final Color DARK_BACKGROUND = new Color(45, 45, 45);
-    	private static final Color LIGHT_TEXT = new Color(200, 200, 200);
+    private static final Color DARK_BACKGROUND = new Color(45, 45, 45);
+    private static final Color LIGHT_TEXT = new Color(200, 200, 200);
 
-    	private List<Player> greenTeamPlayers;
-    	private List<Player> redTeamPlayers;
+    private List<Player> greenTeamPlayers;
+    private List<Player> redTeamPlayers;
 
-    	private JTextArea actionLogArea;
-    	private JLabel greenTeamScoreLabel;
-    	private JLabel redTeamScoreLabel;
+    private JTextArea actionLogArea;
+    private JLabel greenTeamScoreLabel;
+    private JLabel redTeamScoreLabel;
     
-    	private Clip musicClip;
+    private Clip musicClip;
 
     public PlayActionScreen(List<Player> greenTeamPlayers, List<Player> redTeamPlayers) {
         this.greenTeamPlayers = greenTeamPlayers;
@@ -62,12 +63,16 @@ public class PlayActionScreen {
 		
 	JPanel scorePanel = new JPanel(new GridLayout(2,1));
 	scorePanel.setBackground(DARK_BACKGROUND);
-		
-	greenTeamScoreLabel = new JLabel("Green team Score: ", SwingConstants.CENTER);
+
+	//Display green team total score
+	int greenScore = scoreTotal(greenTeamPlayers);
+	greenTeamScoreLabel = new JLabel("Green team Score: " + greenScore, SwingConstants.CENTER);
 	greenTeamScoreLabel.setForeground(Color.GREEN);
 	greenTeamScoreLabel.setFont(new Font("Arial", Font.BOLD, 18));
 		
-	redTeamScoreLabel = new JLabel("Red team Score: ", SwingConstants.CENTER);
+	//Display red team total score
+	int redScore = scoreTotal(redTeamPlayers);
+	redTeamScoreLabel = new JLabel("Red team Score: " + redScore, SwingConstants.CENTER);
 	redTeamScoreLabel.setForeground(Color.RED);
 	redTeamScoreLabel.setFont(new Font("Arial", Font.BOLD, 18));
 		
@@ -85,6 +90,18 @@ public class PlayActionScreen {
 
         startCountdownTimer();
     }
+    
+    //Find score totals for all players on a team
+    public int scoreTotal(List<Player> team)
+    {
+		int totalScore = 0;
+		
+		for(Player player: team)
+		{
+			totalScore += player.getScore();
+		}
+		return totalScore;
+	}
 
 
     private JPanel createActionLogPanel() {
@@ -139,8 +156,6 @@ public class PlayActionScreen {
 				//The timer hit 0! Stop the timer, start the game
 				else if(timeRemaining == 0)
 				{
-					//timer.stop();
-				
 					countdownTimer.setText("GAME STARTING");
 					countdownTimer.setHorizontalAlignment(SwingConstants.CENTER);
 					timer.stop();
@@ -192,12 +207,15 @@ public class PlayActionScreen {
         // purely for testing rn!!!!
 		startGameTimer();
 		//send code 202 to python traffic generator
+
+		
 	}
 	private void stopGame()
 	{
 		stopMusic();
 		System.out.print("Game is finished");
 		//send code 200 to python traffic generator
+		
 	}
 	
 	private void playMusic()
