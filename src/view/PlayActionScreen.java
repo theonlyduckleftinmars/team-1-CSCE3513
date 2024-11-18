@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Random;
+import javax.swing.JLabel;
 
 import javax.sound.sampled.*;
 import java.io.File;
@@ -40,10 +41,7 @@ public class PlayActionScreen {
 	private int redTeamScore = 0;
 
 	private JTextArea actionLogArea;
-	
-	//Score labels
-    private JLabel greenTeamScoreLabel;
-    private JLabel redTeamScoreLabel;
+
     
 	private Clip musicClip;
 
@@ -63,7 +61,7 @@ public class PlayActionScreen {
 
 	public void display() {
 		JFrame frame = new JFrame("Laser Tag - Play Action");
-		frame.setSize(800, 600);
+		frame.setSize(1000, 800);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setLayout(new BorderLayout());
 
@@ -158,16 +156,7 @@ public class PlayActionScreen {
 		teamLabel.setForeground(LIGHT_TEXT);
 		headerPanel.add(teamLabel, BorderLayout.CENTER);
 
-		JLabel scoreLabel = new JLabel("Score: 0", SwingConstants.RIGHT);
-		scoreLabel.setFont(new Font("Arial", Font.PLAIN, 18));
-		scoreLabel.setForeground(LIGHT_TEXT);
-		headerPanel.add(scoreLabel, BorderLayout.EAST);
 
-		if (teamName.equals("Green Team")) {
-			greenTeamScoreLabel = scoreLabel;
-		} else {
-			redTeamScoreLabel = scoreLabel;
-		}
 
 		teamPanel.add(headerPanel, BorderLayout.NORTH);
 
@@ -350,33 +339,5 @@ public class PlayActionScreen {
 	private void logAction(String action) {
 		actionLogArea.append(action + "\n");
 		actionLogArea.setCaretPosition(actionLogArea.getDocument().getLength());
-	}
-
-	private JPanel createTeamPanel(String teamName, List<Player> players, Color teamColor) {
-		JPanel teamPanel = new JPanel(new BorderLayout());
-		teamPanel.setBorder(BorderFactory.createLineBorder(teamColor, 3));
-		teamPanel.setBackground(DARK_BACKGROUND);
-
-		JLabel teamLabel = new JLabel(teamName, SwingConstants.CENTER);
-		teamLabel.setFont(new Font("Arial", Font.BOLD, 24));
-		teamLabel.setOpaque(true);
-		teamLabel.setBackground(teamColor);
-		teamLabel.setForeground(Color.WHITE);
-		teamPanel.add(teamLabel, BorderLayout.NORTH);
-
-		JPanel playerListPanel = new JPanel(new GridLayout(players.size(), 1, 5, 5));
-		playerListPanel.setBackground(DARK_BACKGROUND);
-
-		for (Player player : players) {
-			JLabel playerLabel = new JLabel("ID: " + player.getId() + " | Codename: " + player.getCodeName() + " | Score: " + player.getScore());
-			playerLabel.setForeground(LIGHT_TEXT);
-			playerLabel.setFont(new Font("Arial", Font.PLAIN, 12));
-			playerListPanel.add(playerLabel);
-		}
-
-		teamPanel.add(playerListPanel, BorderLayout.CENTER);
-
-		return teamPanel;
-
 	}
 }
