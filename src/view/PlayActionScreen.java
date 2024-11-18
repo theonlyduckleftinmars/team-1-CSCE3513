@@ -203,6 +203,12 @@ public class PlayActionScreen {
 			}
 		}
 	}
+	private void stopMusic() {
+		if (musicClip != null && musicClip.isRunning()) {
+			musicClip.stop();
+			musicClip.close();
+		}
+	}
 
 	private void startCountdownTimer() {
 		timer = new Timer(1000, e -> {
@@ -273,6 +279,7 @@ public class PlayActionScreen {
 					if (counter >= 30) {
 						logAction("Game ended!");
 						pss.assignCode(221);
+						endGame();
 						break;
 					}
 					counter++;
@@ -282,6 +289,23 @@ public class PlayActionScreen {
 			}
 		}).start();
 	}
+	private void endGame() {
+		greenTeamPlayers.clear();
+		redTeamPlayers.clear();
+
+		stopMusic();
+
+		SwingUtilities.invokeLater(() -> {
+			PlayerEntryScreen playerEntryScreen = new PlayerEntryScreen();
+			playerEntryScreen.display();
+		});
+
+		Window currentWindow = SwingUtilities.getWindowAncestor(countdownTimer);
+		if (currentWindow != null) {
+			currentWindow.dispose();
+		}
+	}
+
 
 	private void updateScores(int hitterId, int hitId, boolean isBaseHit) {
 		int hitScoreChange = isBaseHit ? 20 : -10;
