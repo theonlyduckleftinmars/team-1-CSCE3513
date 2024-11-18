@@ -6,22 +6,13 @@ import network.PhotonServerSocket;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.stream.*;
-import java.util.HashMap;
 import java.util.Map;
-
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
+import java.util.HashMap;
 import java.util.Random;
-import java.util.Scanner;
 
 import javax.sound.sampled.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.Random;
 
 public class PlayActionScreen {
 
@@ -29,6 +20,8 @@ public class PlayActionScreen {
 	private int gameTimer = GAME_TIMER;
 	private static final int TIME_REMAINING = 30;
 	private JLabel countdownTimer;
+	private JLabel greenTeamScoreLabel;
+	private JLabel redTeamScoreLabel;
 	private Timer timer;
 	private int timeRemaining = TIME_REMAINING;
 
@@ -38,6 +31,13 @@ public class PlayActionScreen {
 	private List<Player> greenTeamPlayers;
 	private List<Player> redTeamPlayers;
 	private Map<Integer, String> equipmentMap;
+	private Map<Integer, Integer> playerScores;
+
+	private JPanel greenTeamPlayerListPanel;
+	private JPanel redTeamPlayerListPanel;
+
+	private int greenTeamScore = 0;
+	private int redTeamScore = 0;
 
 	private JTextArea actionLogArea;
 	
@@ -51,6 +51,14 @@ public class PlayActionScreen {
 		this.greenTeamPlayers = greenTeamPlayers;
 		this.redTeamPlayers = redTeamPlayers;
 		this.equipmentMap = equipmentMap;
+
+		this.playerScores = new HashMap<>();
+		for (Player player : greenTeamPlayers) {
+			playerScores.put(player.getId(), 100);
+		}
+		for (Player player : redTeamPlayers) {
+			playerScores.put(player.getId(), 100);
+		}
 	}
 
 	public void display() {
@@ -98,6 +106,7 @@ public class PlayActionScreen {
 		frame.getContentPane().setBackground(DARK_BACKGROUND);
 		frame.setVisible(true);
 
+		updateTeamScores();
 		startCountdownTimer();
 	}
 	
@@ -136,109 +145,52 @@ public class PlayActionScreen {
 
 		return actionLogPanel;
 	}
+	private JPanel createTeamPanel(String teamName, List<Player> players, Color teamColor) {
+		JPanel teamPanel = new JPanel(new BorderLayout());
+		teamPanel.setBorder(BorderFactory.createLineBorder(teamColor, 3));
+		teamPanel.setBackground(DARK_BACKGROUND);
 
-	private void startCountdownTimer() {
-		timer = new Timer(1000, new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				timeRemaining--;
-				countdownTimer.setText("Countdown to laser mayhem: " + timeRemaining);
-				countdownTimer.setHorizontalAlignment(SwingConstants.CENTER);
+		JPanel headerPanel = new JPanel(new BorderLayout());
+		headerPanel.setBackground(DARK_BACKGROUND);
 
-				if (timeRemaining == 15) {
-					playMusic();
-				} else if (timeRemaining == 0) {
-					countdownTimer.setText("GAME STARTING");
-					countdownTimer.setHorizontalAlignment(SwingConstants.CENTER);
-					timer.stop();
-					Timer gameStartingTimer = new Timer(10000, new ActionListener() {
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							startGame();
-						}
-					});
-					gameStartingTimer.setRepeats(false);
-					gameStartingTimer.start();
-				}
-			}
-		});
-		timer.start();
-	}
+		JLabel teamLabel = new JLabel(teamName, SwingConstants.CENTER);
+		teamLabel.setFont(new Font("Arial", Font.BOLD, 24));
+		teamLabel.setForeground(LIGHT_TEXT);
+		headerPanel.add(teamLabel, BorderLayout.CENTER);
 
-	private void startGame() {
-		System.out.print("Game started!");
+		JLabel scoreLabel = new JLabel("Score: 0", SwingConstants.RIGHT);
+		scoreLabel.setFont(new Font("Arial", Font.PLAIN, 18));
+		scoreLabel.setForeground(LIGHT_TEXT);
+		headerPanel.add(scoreLabel, BorderLayout.EAST);
 
-		PhotonServerSocket pss = new PhotonServerSocket();
-		pss.assignCode(202);
-		logAction("Game started! Signal 202 sent.");
-
-		new Thread(() -> {
-			try {
-				Random random = new Random();
-				int counter = 0;
-
-				while (true) {
-					Player greenPlayer = greenTeamPlayers.get(random.nextInt(greenTeamPlayers.size()));
-					Player redPlayer = redTeamPlayers.get(random.nextInt(redTeamPlayers.size()));
-					String greenEquipmentId = equipmentMap.get(greenPlayer.getId());
-					String redEquipmentId = equipmentMap.get(redPlayer.getId());
-
-					if (!isNumeric(greenEquipmentId) || !isNumeric(redEquipmentId)) {
-						logAction("Invalid equipment ID detected. Skipping event.");
-						continue;
-					}
-
-					String message;
-					if (random.nextBoolean()) {
-						message = redPlayer.getCodeName() + " hit " + greenPlayer.getCodeName();
-					} else {
-						message = greenPlayer.getCodeName() + " hit " + redPlayer.getCodeName();
-					}
-
-
-					if (counter == 10) {
-						message = redPlayer.getCodeName() + " hit the base!";
-					}
-					if (counter == 20) {
-						message = greenPlayer.getCodeName() + " hit the base!";
-					}
-
-					logAction(message);
-
-					pss.assignCode(Integer.parseInt(greenEquipmentId));
-
-
-					Thread.sleep(random.nextInt(3000) + 1000);
-
-
-					if (counter >= 30) {
-						logAction("Game ended!");
-						pss.assignCode(221);
-						break;
-					}
-					counter++;
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}).start();
-	}
-
-	private boolean isNumeric(String str) {
-		if (str == null || str.isEmpty()) {
-			return false;
+		if (teamName.equals("Green Team")) {
+			greenTeamScoreLabel = scoreLabel;
+		} else {
+			redTeamScoreLabel = scoreLabel;
 		}
-		try {
-			Integer.parseInt(str);
-			return true;
-		} catch (NumberFormatException e) {
-			return false;
-		}
-	}
 
-	private void stopGame() {
-		stopMusic();
-		System.out.print("Game stopped");
+		teamPanel.add(headerPanel, BorderLayout.NORTH);
+
+		JPanel playerListPanel = new JPanel(new GridLayout(players.size(), 1, 5, 5));
+		playerListPanel.setBackground(DARK_BACKGROUND);
+
+		for (Player player : players) {
+			JLabel playerLabel = new JLabel(
+					"ID: " + player.getId() + " | Codename: " + player.getCodeName() + " | Score: 100");
+			playerLabel.setForeground(LIGHT_TEXT);
+			playerLabel.setFont(new Font("Arial", Font.PLAIN, 18));
+			playerListPanel.add(playerLabel);
+		}
+
+		teamPanel.add(playerListPanel, BorderLayout.CENTER);
+
+		if (teamName.equals("Green Team")) {
+			greenTeamPlayerListPanel = playerListPanel;
+		} else {
+			redTeamPlayerListPanel = playerListPanel;
+		}
+
+		return teamPanel;
 	}
 
 	private void playMusic() {
@@ -263,16 +215,141 @@ public class PlayActionScreen {
 		}
 	}
 
-	private void stopMusic() {
-		if (musicClip != null && musicClip.isRunning()) {
-			musicClip.stop();
-			musicClip.close();
+	private void startCountdownTimer() {
+		timer = new Timer(1000, e -> {
+			timeRemaining--;
+			countdownTimer.setText("Countdown to laser mayhem: " + timeRemaining);
+			countdownTimer.setHorizontalAlignment(SwingConstants.CENTER);
+
+			if (timeRemaining == 15) {
+				playMusic();
+			} else if (timeRemaining == 0) {
+				countdownTimer.setText("GAME STARTING");
+				countdownTimer.setHorizontalAlignment(SwingConstants.CENTER);
+				timer.stop();
+				Timer gameStartingTimer = new Timer(10000, event -> startGame());
+				gameStartingTimer.setRepeats(false);
+				gameStartingTimer.start();
+			}
+		});
+		timer.start();
+	}
+
+	private void startGame() {
+		System.out.print("Game started!");
+
+		PhotonServerSocket pss = new PhotonServerSocket();
+		pss.assignCode(202);
+		logAction("Game started!");
+
+		new Thread(() -> {
+			try {
+				Random random = new Random();
+				int counter = 0;
+
+				while (true) {
+					Player greenPlayer = greenTeamPlayers.get(random.nextInt(greenTeamPlayers.size()));
+					Player redPlayer = redTeamPlayers.get(random.nextInt(redTeamPlayers.size()));
+
+					String greenEquipmentId = equipmentMap.get(greenPlayer.getId());
+					String redEquipmentId = equipmentMap.get(redPlayer.getId());
+
+					if (!isNumeric(greenEquipmentId) || !isNumeric(redEquipmentId)) {
+						logAction("Invalid equipment ID detected. Skipping event.");
+						continue;
+					}
+
+					String message;
+					if (random.nextBoolean()) {
+						message = redPlayer.getCodeName() + " hit " + greenPlayer.getCodeName() + "!";
+						updateScores(redPlayer.getId(), greenPlayer.getId(), false);
+					} else {
+						message = greenPlayer.getCodeName() + " hit " + redPlayer.getCodeName() + "!";
+						updateScores(greenPlayer.getId(), redPlayer.getId(), false);
+					}
+
+					if (counter == 10) {
+						message = redPlayer.getCodeName() + " hit the base!";
+						updateScores(redPlayer.getId(), -1, true);
+					}
+					if (counter == 20) {
+						message = greenPlayer.getCodeName() + " hit the base!";
+						updateScores(greenPlayer.getId(), -1, true);
+					}
+
+					logAction(message);
+
+					Thread.sleep(random.nextInt(3000) + 1000);
+
+					if (counter >= 30) {
+						logAction("Game ended!");
+						pss.assignCode(221);
+						break;
+					}
+					counter++;
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}).start();
+	}
+
+	private void updateScores(int hitterId, int hitId, boolean isBaseHit) {
+		int hitScoreChange = isBaseHit ? 20 : -10;
+		int hitterScoreChange = isBaseHit ? 20 : 10;
+
+		playerScores.put(hitterId, playerScores.get(hitterId) + hitterScoreChange);
+
+		if (hitId != -1) {
+			playerScores.put(hitId, playerScores.get(hitId) + hitScoreChange);
+		}
+
+		updateTeamScores();
+		updatePlayerPanels();
+	}
+
+	private void updateTeamScores() {
+		greenTeamScore = greenTeamPlayers.stream().mapToInt(player -> playerScores.get(player.getId())).sum();
+		redTeamScore = redTeamPlayers.stream().mapToInt(player -> playerScores.get(player.getId())).sum();
+
+		if (greenTeamScoreLabel != null) {
+			greenTeamScoreLabel.setText("Green Team Score: " + greenTeamScore);
+		}
+		if (redTeamScoreLabel != null) {
+			redTeamScoreLabel.setText("Red Team Score: " + redTeamScore);
+		}
+	}
+
+	private void updatePlayerPanels() {
+		for (int i = 0; i < greenTeamPlayers.size(); i++) {
+			Player player = greenTeamPlayers.get(i);
+			int score = playerScores.get(player.getId());
+			JLabel playerLabel = (JLabel) greenTeamPlayerListPanel.getComponent(i);
+			playerLabel.setText("ID: " + player.getId() + " | Codename: " + player.getCodeName() + " | Score: " + score);
+		}
+		for (int i = 0; i < redTeamPlayers.size(); i++) {
+			Player player = redTeamPlayers.get(i);
+			int score = playerScores.get(player.getId());
+			JLabel playerLabel = (JLabel) redTeamPlayerListPanel.getComponent(i);
+			playerLabel.setText("ID: " + player.getId() + " | Codename: " + player.getCodeName() + " | Score: " + score);
+		}
+	}
+
+	private boolean isNumeric(String str) {
+		if (str == null || str.isEmpty()) {
+			return false;
+		}
+		try {
+			Integer.parseInt(str);
+			return true;
+		} catch (NumberFormatException e) {
+			return false;
 		}
 	}
 
 	private void logAction(String action) {
 		actionLogArea.append(action + "\n");
-		actionLogArea.setCaretPosition(actionLogArea.getDocument().getLength() / 2);
+		actionLogArea.setCaretPosition(actionLogArea.getDocument().getLength());
 	}
 
 	private JPanel createTeamPanel(String teamName, List<Player> players, Color teamColor) {
@@ -300,5 +377,6 @@ public class PlayActionScreen {
 		teamPanel.add(playerListPanel, BorderLayout.CENTER);
 
 		return teamPanel;
+
 	}
 }
