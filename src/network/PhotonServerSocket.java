@@ -9,6 +9,7 @@ import java.net.InetAddress;
 import java.util.concurrent.*;
 //Utility
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 
 public class PhotonServerSocket {
 
@@ -21,6 +22,8 @@ public class PhotonServerSocket {
     private DatagramSocket sin;
     private DatagramSocket sout;
     private ClientHandler ch;
+
+    ArrayList<int[]> logs;  //first int pos is player ID, next is event number (0 is hit someone, 1 is getting hit by someone)
 
     private int baseHitterCode = -1;    //when -1 base hasn't been hit else it will be the code of the player who hit the base
     private boolean baseHitToggle = false; //when false base hasn't been hit yet else the base has been hit
@@ -74,7 +77,13 @@ public class PhotonServerSocket {
                 System.out.println("Player " + players[0] + " has hit the base");
                 if (!baseHitToggle && baseHitterCode == -1) {
                     SetBaseHitter(Integer.parseInt(players[0]));
+                    logs.add(new int[]{Integer.parseInt(players[0], 0)});
                 }
+            }else{
+
+                logs.add(new int[]{Integer.parseInt(players[0], 0)});
+                logs.add(new int[]{Integer.parseInt(players[1], 1)});
+
             }
         } else {
             System.out.println("Code received from client did not match currently compatible codes: " + code);
@@ -121,6 +130,26 @@ public class PhotonServerSocket {
 
     public int getHitterCode() {
         return baseHitterCode;
+    }
+
+    public ArrayList<int[]> getAndClearLogs(){
+
+        ArrayList<int[]> templogs = new ArrayList<>(logs);
+        logs.clear();
+        return logs;
+
+    }
+
+    public void clearLogs(){
+
+        logs.clear();
+
+    }
+
+    public ArrayList<int[]> getLogs(){
+
+        return logs;
+
     }
 
     //CLIENT HANDLER
