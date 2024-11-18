@@ -56,7 +56,7 @@
    ```bash
    ./run.bash
 
-## To simulate traffic between players:
+## To simulate traffic between players (For testing purposes only):
 Navigate to src/network
 
 1. Compile TrafficGenerator.java:
