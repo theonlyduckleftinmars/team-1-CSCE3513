@@ -21,14 +21,14 @@ public class PlayActionScreen {
 	private int gameTimer = GAME_TIMER;
     	private static final int TIME_REMAINING = 30;
     	private JLabel countdownTimer;
-    	private Timer timer;
+   	private Timer timer;
     	private int timeRemaining = TIME_REMAINING;
 
     	private static final Color DARK_BACKGROUND = new Color(45, 45, 45);
     	private static final Color LIGHT_TEXT = new Color(200, 200, 200);
 
     	private List<Player> greenTeamPlayers;
-   	private List<Player> redTeamPlayers;
+    	private List<Player> redTeamPlayers;
 
     	private JTextArea actionLogArea;
     	private JLabel greenTeamScoreLabel;
@@ -256,9 +256,9 @@ public class PlayActionScreen {
         playerListPanel.setBackground(DARK_BACKGROUND);
 
         for (Player player : players) {
-            JLabel playerLabel = new JLabel("ID: " + player.getId() + " | Codename: " + player.getCodeName());
+            JLabel playerLabel = new JLabel("ID: " + player.getId() + " | Name: " + player.getCodeName() + " | Score: " + player.getScore());
             playerLabel.setForeground(LIGHT_TEXT);
-            playerLabel.setFont(new Font("Arial", Font.PLAIN, 18));
+            playerLabel.setFont(new Font("Arial", Font.PLAIN, 12));
             playerListPanel.add(playerLabel);
         }
 
