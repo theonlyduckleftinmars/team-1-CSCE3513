@@ -28,9 +28,7 @@ public class PhotonServerSocket {
     public PhotonServerSocket() { //will return an exception if error instead of actual server socket class
         try {
             sin = new DatagramSocket(IN_PORT);    //port it should receive data from
-            sout = new DatagramSocket(OUT_PORT);    //port it should send data to
             System.out.println("Server input socket initialized: " + sin);
-            System.out.println("Server output socket initialized: " + sout);
         } catch (SocketException se) {
             System.out.println("Error setting up sockets");
             se.printStackTrace();
@@ -55,7 +53,7 @@ public class PhotonServerSocket {
         byte byteArray[] = buffer.array();
 
         try {
-            DatagramPacket packet = new DatagramPacket(byteArray, byteArray.length, InetAddress.getLocalHost(), 7500);
+            DatagramPacket packet = new DatagramPacket(byteArray, byteArray.length, InetAddress.getLocalHost(), OUT_PORT);
             sout.send(packet);
         } catch (Exception e) {
             System.out.println("Error sending out a code");
