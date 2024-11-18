@@ -136,7 +136,7 @@ public class PhotonServerSocket {
 
         ArrayList<int[]> templogs = new ArrayList<>(logs);
         logs.clear();
-        return logs;
+        return templogs;
 
     }
 
