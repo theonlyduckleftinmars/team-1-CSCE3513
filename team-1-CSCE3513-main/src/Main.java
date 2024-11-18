@@ -1,15 +1,18 @@
 import view.PlayerEntryScreen;
 import view.SplashScreen;
-import network.*;
+import network.PhotonServerSocket;
+import database.PlayerManager;
 
 public class Main {
     public static void main(String[] args) {
+        PlayerManager playerManager = new PlayerManager();
         SplashScreen splashScreen = new SplashScreen();
-        UDPManager udpManager = new UDPManager();
-        PlayerEntryScreen playerEntryScreen = new PlayerEntryScreen();
+        PhotonServerSocket pss = new PhotonServerSocket();
+        PlayerEntryScreen playerEntryScreen = new PlayerEntryScreen(pss);
 
         splashScreen.display();
         playerEntryScreen.display();
-        udpManager.receiveHits();
+
+        playerManager.loadPlayers();
     }
 }
