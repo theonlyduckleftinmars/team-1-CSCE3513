@@ -12,8 +12,5 @@ javac -cp $CLASSPATH view/*.java model/*.java database/*.java controller/*.java 
 # Run the main program
 java -cp $CLASSPATH Main
 
-# Run the TrafficGenerator
-java -cp $CLASSPATH network.TrafficGenerator
-
 # Navigate back to the root directory
 cd ..
