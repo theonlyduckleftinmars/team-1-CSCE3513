@@ -55,3 +55,12 @@
 5. Start the program by typing:
    ```bash
    ./run.bash
+
+## To simulate traffic between players (From initial directory):
+
+1. Compile TrafficGenerator.java:
+   ```bash
+   javac network.TrafficGenerator.java
+2. Run TrafficGenerator.java:
+   ```bash
+   java network.TrafficGenerator.java
