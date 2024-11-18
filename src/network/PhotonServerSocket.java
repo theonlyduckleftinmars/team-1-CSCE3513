@@ -71,22 +71,21 @@ public class PhotonServerSocket {
 
         if (code.contains(":")) {
             String players[] = code.split(":");
-            if (players.length == 2)
-                System.out.println("Player " + players[1] + " was hit");  //get everything to right of semicolon which is the code of hit person
-            if (Integer.parseInt(players[1]) == 43) {
-                System.out.println("Player " + players[0] + " has hit the base");
-                if (!baseHitToggle && baseHitterCode == -1) {
-                    SetBaseHitter(Integer.parseInt(players[0]));
-                    logs.add(new int[]{Integer.parseInt(players[0], 0)});
-                }
-            }else{
-
+            if (players.length == 2){
+                System.out.println("Player " + players[1] + " was hit by " + players[0]);  //get everything to right of semicolon which is the code of hit person
                 logs.add(new int[]{Integer.parseInt(players[0], 0)});
-                logs.add(new int[]{Integer.parseInt(players[1], 1)});
 
-                assignCode(Integer.parseInt(players[1]));
-
+                if (Integer.parseInt(players[1]) == 43) {
+                    System.out.println("Player " + players[0] + " has hit the base");
+                    if (!baseHitToggle && baseHitterCode == -1) {
+                        SetBaseHitter(Integer.parseInt(players[0]));
+                    }
+                }else{
+                    logs.add(new int[]{Integer.parseInt(players[1], 1)});
+                    assignCode(Integer.parseInt(players[1]));
+                }
             }
+
         } else {
             System.out.println("Code received from client did not match currently compatible codes: " + code);
         }
