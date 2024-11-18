@@ -40,6 +40,11 @@ public class PlayActionScreen {
 	private Map<Integer, String> equipmentMap;
 
 	private JTextArea actionLogArea;
+	
+	//Score labels
+    private JLabel greenTeamScoreLabel;
+    private JLabel redTeamScoreLabel;
+    
 	private Clip musicClip;
 
 	public PlayActionScreen(List<Player> greenTeamPlayers, List<Player> redTeamPlayers, Map<Integer, String> equipmentMap) {
@@ -66,17 +71,48 @@ public class PlayActionScreen {
 		JPanel greenTeamPanel = createTeamPanel("Green Team", greenTeamPlayers, Color.GREEN);
 		JPanel redTeamPanel = createTeamPanel("Red Team", redTeamPlayers, Color.RED);
 		JPanel actionLogPanel = createActionLogPanel();
+		
+		JPanel scorePanel = new JPanel(new GridLayout(2,1));
+		scorePanel.setBackground(DARK_BACKGROUND);
+		
+		//Display green team total score
+		int greenScore = scoreTotal(greenTeamPlayers);
+		greenTeamScoreLabel = new JLabel("Green team Score: " + greenScore, SwingConstants.CENTER);
+		greenTeamScoreLabel.setForeground(Color.GREEN);
+		greenTeamScoreLabel.setFont(new Font("Arial", Font.BOLD, 18));
+		//Display red team total score
+		int redScore = scoreTotal(redTeamPlayers);
+		redTeamScoreLabel = new JLabel("Red team Score: " + redScore, SwingConstants.CENTER);
+		redTeamScoreLabel.setForeground(Color.RED);
+		redTeamScoreLabel.setFont(new Font("Arial", Font.BOLD, 18));
+		//Add score panels to the screen
+		scorePanel.add(greenTeamScoreLabel);
+		scorePanel.add(redTeamScoreLabel);
 
 		teamPanel.add(greenTeamPanel);
 		teamPanel.add(actionLogPanel);
 		teamPanel.add(redTeamPanel);
 
+		frame.add(scorePanel, BorderLayout.SOUTH);
 		frame.add(teamPanel, BorderLayout.CENTER);
 		frame.getContentPane().setBackground(DARK_BACKGROUND);
 		frame.setVisible(true);
 
 		startCountdownTimer();
 	}
+	
+	//Find total score for all players on a team
+	    public int scoreTotal(List<Player> team)
+    {
+		int totalScore = 0;
+		
+		for(Player player: team)
+		{
+			totalScore += player.getScore();
+		}
+		return totalScore;
+	}
+
 
 	private JPanel createActionLogPanel() {
 		JPanel actionLogPanel = new JPanel(new BorderLayout());
@@ -255,9 +291,9 @@ public class PlayActionScreen {
 		playerListPanel.setBackground(DARK_BACKGROUND);
 
 		for (Player player : players) {
-			JLabel playerLabel = new JLabel("ID: " + player.getId() + " | Codename: " + player.getCodeName());
+			JLabel playerLabel = new JLabel("ID: " + player.getId() + " | Codename: " + player.getCodeName() + " | Score: " + player.getScore());
 			playerLabel.setForeground(LIGHT_TEXT);
-			playerLabel.setFont(new Font("Arial", Font.PLAIN, 18));
+			playerLabel.setFont(new Font("Arial", Font.PLAIN, 12));
 			playerListPanel.add(playerLabel);
 		}
 
