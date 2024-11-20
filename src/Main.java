@@ -5,10 +5,11 @@ import database.PlayerManager;
 
 public class Main {
     public static void main(String[] args) {
+
+        PhotonServerSocket pss = new PhotonServerSocket();
         PlayerManager playerManager = new PlayerManager();
         SplashScreen splashScreen = new SplashScreen();
-        PhotonServerSocket pss = new PhotonServerSocket();
-        PlayerEntryScreen playerEntryScreen = new PlayerEntryScreen(pss);
+        PlayerEntryScreen playerEntryScreen = new PlayerEntryScreen();
 
         splashScreen.display();
         playerEntryScreen.display();
