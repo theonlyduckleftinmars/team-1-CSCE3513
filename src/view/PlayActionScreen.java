@@ -25,6 +25,7 @@ public class PlayActionScreen {
 	private JLabel redTeamScoreLabel;
 	private Timer timer;
 	private int timeRemaining = TIME_REMAINING;
+	private PhotonServerSocket pss;
 
 	private static final Color DARK_BACKGROUND = new Color(45, 45, 45);
 	private static final Color LIGHT_TEXT = new Color(200, 200, 200);
@@ -45,10 +46,11 @@ public class PlayActionScreen {
     
 	private Clip musicClip;
 
-	public PlayActionScreen(List<Player> greenTeamPlayers, List<Player> redTeamPlayers, Map<Integer, String> equipmentMap) {
+	public PlayActionScreen(List<Player> greenTeamPlayers, List<Player> redTeamPlayers, Map<Integer, String> equipmentMap, PhotonServerSocket pss) {
 		this.greenTeamPlayers = greenTeamPlayers;
 		this.redTeamPlayers = redTeamPlayers;
 		this.equipmentMap = equipmentMap;
+		this.pss = pss;
 
 		this.playerScores = new HashMap<>();
 		for (Player player : greenTeamPlayers) {
@@ -232,8 +234,7 @@ public class PlayActionScreen {
 
 	private void startGame() {
 		System.out.print("Game started!");
-
-		PhotonServerSocket pss = new PhotonServerSocket();
+		
 		pss.assignCode(202);
 		logAction("Game started!");
 
