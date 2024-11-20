@@ -66,3 +66,4 @@ Navigate to src/network
    ```bash
    java TrafficGenerator.java
 3. Your simulation is now ready to receive traffic from the game software!
+   Note: Make sure to run traffic generator before starting main program
