@@ -237,34 +237,51 @@ public class PlayActionScreen {
 
 		//sending out player info as string PlayerID:TeamID with TeamID 0 being green and 1 being red
 
-		for(int i = 0; i < greenTeamPlayers.size(); i++){	//sending out green team
+		new Thread(() -> {
+
+			for(int i = 0; i < greenTeamPlayers.size(); i++){	//sending out green team
+				
+				Player greenPlayer = greenTeamPlayers.get(i);
+				PhotonServerSocket.sendPlayer(greenPlayer.getId(), 0);
 			
-			Player greenPlayer = greenTeamPlayers.get(i);
-			PhotonServerSocket.sendPlayer(greenPlayer.getId(), 0);
-		
-		}
-			
-		for(int i = 0; i < redTeamPlayers.size(); i++){		//sending out red team
-			
-			Player redPlayer = redTeamPlayers.get(i);
-			PhotonServerSocket.sendPlayer(redPlayer.getId(), 1);
+			}
+				
+			for(int i = 0; i < redTeamPlayers.size(); i++){		//sending out red team
+				
+				Player redPlayer = redTeamPlayers.get(i);
+				PhotonServerSocket.sendPlayer(redPlayer.getId(), 1);
 
-		}
+			}
 
-		PhotonServerSocket.assignCode(202);	//send out code when done giving players
+			PhotonServerSocket.assignCode(202);	//send out code when done getting and assigning players
 
-		//simulating 10 seconds of game time
-		try{
-			Thread.sleep(10000);
-		}catch(Exception e){
-			e.printStackTrace();
-		}
+			//simulating 10 seconds of game time can be changed instructions received at the exact end of the game aren't processed
 
-		PhotonServerSocket.assignCode(221);
-		endGame();
+			try{
+				Thread.sleep(10000);
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+
+			PhotonServerSocket.assignCode(221);
+
+			endGame();
+
+		}).start();
 
 	}
 	private void endGame() {
+
+		System.out.println("Green Team total score: " + greenTeamScore + "\nRed Team total score: " + redTeamScore + "\nPlayer Summary:");
+
+		for(int i = 0; i < greenTeamPlayers.size(); i++){
+			System.out.println("Green Player " + greenTeamPlayers.get(i) + " score: " + playerScores.get(greenTeamPlayers.get(i).getId()));
+		}
+
+		for(int i = 0; i < redTeamPlayers.size(); i++){
+			System.out.println("Red Player " + redTeamPlayers.get(i) + " score: " + playerScores.get(redTeamPlayers.get(i).getId()));
+		}
+
 		greenTeamPlayers.clear();
 		redTeamPlayers.clear();
 
@@ -282,14 +299,14 @@ public class PlayActionScreen {
 	}
 
 
-	private void updateScores(int hitterId, int hitId, boolean isBaseHit) {
-		int hitScoreChange = isBaseHit ? 20 : -10;
+	public void updateScores(int hitterId, int hitId, boolean isBaseHit) {
+		
 		int hitterScoreChange = isBaseHit ? 20 : 10;
 
 		playerScores.put(hitterId, playerScores.get(hitterId) + hitterScoreChange);
 
-		if (hitId != -1) {
-			playerScores.put(hitId, playerScores.get(hitId) + hitScoreChange);
+		if (!isBaseHit) {
+			playerScores.put(hitId, playerScores.get(hitId) + -10);	//-10 points for being hit
 		}
 
 		updateTeamScores();
