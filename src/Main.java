@@ -8,7 +8,7 @@ public class Main {
         PlayerManager playerManager = new PlayerManager();
         SplashScreen splashScreen = new SplashScreen();
         PhotonServerSocket pss = new PhotonServerSocket();
-        PlayerEntryScreen playerEntryScreen = new PlayerEntryScreen();
+        PlayerEntryScreen playerEntryScreen = new PlayerEntryScreen(pss);
 
         splashScreen.display();
         playerEntryScreen.display();
