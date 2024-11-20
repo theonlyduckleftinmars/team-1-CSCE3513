@@ -78,9 +78,9 @@ public class PhotonServerSocket {
     }
 
     //Handler to server functions
-    private void Decode(String code, ClientHandler ch) {
+    private void Decode(String code) {
 
-        //private void updateScores(int hitterId, int hitId, boolean isBaseHit) {
+        System.out.println("Code received was: " + code);
 
         String response = null;
         if (code.contains(":")) {
@@ -95,19 +95,22 @@ public class PhotonServerSocket {
                         System.out.println("Player " + shooter + " has hit the green base");
                         SetGreenBaseHitter(Integer.parseInt(shooter));
                         response = "Green base hit by Player " + shooter;
+                        pas.logAction(response);
                         pas.updateScores(Integer.parseInt(shooter), Integer.parseInt(target), true);
                     }
                 } else if (Integer.parseInt(target) == 53) {
                     if (!redBaseHitToggle && redBaseHitterCode == -1) {
                         System.out.println("Player " + shooter + " has hit the red base");
-                        SetGreenBaseHitter(Integer.parseInt(shooter));
-                        response = "Green base hit by Player " + shooter;
+                        SetRedBaseHitter(Integer.parseInt(shooter));
+                        response = "Red base hit by Player " + shooter;
+                        pas.logAction(response);
                         pas.updateScores(Integer.parseInt(shooter), Integer.parseInt(target), true);
                     }
                 } else {
                     pas.updateScores(Integer.parseInt(shooter), Integer.parseInt(target), false);
                     System.out.println("Player: " + shooter + " hit Player " + target);
                     response = "Player " + shooter + " hit Player " + target;
+                    pas.logAction(response);
                 }
             }
         } else {
@@ -118,9 +121,8 @@ public class PhotonServerSocket {
             sendResponse(response);
         }
 
-        System.out.println("Current Red base hitter: " + redBaseHitterCode + "\nCurrent toggle on red base hits: " + redBaseHitToggle);
-        System.out.println("Current Green base hitter: " + greenBaseHitterCode + "\nCurrent toggle on green base hits: " + greenBaseHitToggle);
-        System.out.println("Code received was: " + code);
+        //System.out.println("Current Red base hitter: " + redBaseHitterCode + "\nCurrent toggle on red base hits: " + redBaseHitToggle);
+        //System.out.println("Current Green base hitter: " + greenBaseHitterCode + "\nCurrent toggle on green base hits: " + greenBaseHitToggle);
 
     }
 
@@ -224,7 +226,7 @@ public class PhotonServerSocket {
                     int length = packet.getLength();
                     byte[] data = packet.getData();
 
-                    pss.Decode(new String(data, 0, length), this); //add handling to make sure data received is string
+                    pss.Decode(new String(data, 0, length)); //add handling to make sure data received is string
                     in.close();
                 } catch (Exception e) {
                     System.out.println("There was an error in the thread for receiving packets");
