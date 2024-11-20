@@ -275,11 +275,11 @@ public class PlayActionScreen {
 		System.out.println("Green Team total score: " + greenTeamScore + "\nRed Team total score: " + redTeamScore + "\nPlayer Summary:");
 
 		for(int i = 0; i < greenTeamPlayers.size(); i++){
-			System.out.println("Green Player " + greenTeamPlayers.get(i) + " score: " + playerScores.get(greenTeamPlayers.get(i).getId()));
+			System.out.println("Green Player " + greenTeamPlayers.get(i).getCodeName() + " score: " + playerScores.get(greenTeamPlayers.get(i).getId()));
 		}
 
 		for(int i = 0; i < redTeamPlayers.size(); i++){
-			System.out.println("Red Player " + redTeamPlayers.get(i) + " score: " + playerScores.get(redTeamPlayers.get(i).getId()));
+			System.out.println("Red Player " + redTeamPlayers.get(i).getCodeName() + " score: " + playerScores.get(redTeamPlayers.get(i).getId()));
 		}
 
 		greenTeamPlayers.clear();
@@ -352,7 +352,7 @@ public class PlayActionScreen {
 		}
 	}
 
-	private void logAction(String action) {
+	public void logAction(String action) {
 		actionLogArea.append(action + "\n");
 		actionLogArea.setCaretPosition(actionLogArea.getDocument().getLength());
 	}
