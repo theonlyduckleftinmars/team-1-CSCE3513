@@ -1,8 +1,8 @@
 package view;
 
 import model.Player;
-
 import network.PhotonServerSocket;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
@@ -25,7 +25,6 @@ public class PlayActionScreen {
 	private JLabel redTeamScoreLabel;
 	private Timer timer;
 	private int timeRemaining = TIME_REMAINING;
-	private PhotonServerSocket pss;
 
 	private static final Color DARK_BACKGROUND = new Color(45, 45, 45);
 	private static final Color LIGHT_TEXT = new Color(200, 200, 200);
@@ -46,11 +45,10 @@ public class PlayActionScreen {
     
 	private Clip musicClip;
 
-	public PlayActionScreen(List<Player> greenTeamPlayers, List<Player> redTeamPlayers, Map<Integer, String> equipmentMap, PhotonServerSocket pss) {
+	public PlayActionScreen(List<Player> greenTeamPlayers, List<Player> redTeamPlayers, Map<Integer, String> equipmentMap) {
 		this.greenTeamPlayers = greenTeamPlayers;
 		this.redTeamPlayers = redTeamPlayers;
 		this.equipmentMap = equipmentMap;
-		this.pss = pss;
 
 		this.playerScores = new HashMap<>();
 		for (Player player : greenTeamPlayers) {
@@ -233,62 +231,38 @@ public class PlayActionScreen {
 	}
 
 	private void startGame() {
-		System.out.print("Game started!");
+		System.out.println("Game started!");
 		
-		pss.assignCode(202);
 		logAction("Game started!");
 
-		new Thread(() -> {
-			try {
-				Random random = new Random();
-				int counter = 0;
+		//sending out player info as string PlayerID:TeamID with TeamID 0 being green and 1 being red
 
-				while (true) {
-					Player greenPlayer = greenTeamPlayers.get(random.nextInt(greenTeamPlayers.size()));
-					Player redPlayer = redTeamPlayers.get(random.nextInt(redTeamPlayers.size()));
+		for(int i = 0; i < greenTeamPlayers.size(); i++){	//sending out green team
+			
+			Player greenPlayer = greenTeamPlayers.get(i);
+			PhotonServerSocket.sendPlayer(greenPlayer.getId(), 0);
+		
+		}
+			
+		for(int i = 0; i < redTeamPlayers.size(); i++){		//sending out red team
+			
+			Player redPlayer = redTeamPlayers.get(i);
+			PhotonServerSocket.sendPlayer(redPlayer.getId(), 1);
 
-					String greenEquipmentId = equipmentMap.get(greenPlayer.getId());
-					String redEquipmentId = equipmentMap.get(redPlayer.getId());
+		}
 
-					if (!isNumeric(greenEquipmentId) || !isNumeric(redEquipmentId)) {
-						logAction("Invalid equipment ID detected. Skipping event.");
-						continue;
-					}
+		PhotonServerSocket.assignCode(202);	//send out code when done giving players
 
-					String message;
-					if (random.nextBoolean()) {
-						message = redPlayer.getCodeName() + " hit " + greenPlayer.getCodeName() + "!";
-						updateScores(redPlayer.getId(), greenPlayer.getId(), false);
-					} else {
-						message = greenPlayer.getCodeName() + " hit " + redPlayer.getCodeName() + "!";
-						updateScores(greenPlayer.getId(), redPlayer.getId(), false);
-					}
+		//simulating 10 seconds of game time
+		try{
+			Thread.sleep(10000);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 
-					if (counter == 10) {
-						message = redPlayer.getCodeName() + " hit the base!";
-						updateScores(redPlayer.getId(), -1, true);
-					}
-					if (counter == 20) {
-						message = greenPlayer.getCodeName() + " hit the base!";
-						updateScores(greenPlayer.getId(), -1, true);
-					}
+		PhotonServerSocket.assignCode(221);
+		endGame();
 
-					logAction(message);
-
-					Thread.sleep(random.nextInt(3000) + 1000);
-
-					if (counter >= 30) {
-						logAction("Game ended!");
-						pss.assignCode(221);
-						endGame();
-						break;
-					}
-					counter++;
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}).start();
 	}
 	private void endGame() {
 		greenTeamPlayers.clear();
