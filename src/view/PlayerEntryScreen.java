@@ -25,8 +25,15 @@ public class PlayerEntryScreen {
 
     private JTextField[][] greenTeamFields = new JTextField[NUM_PLAYERS][3];
     private JTextField[][] redTeamFields = new JTextField[NUM_PLAYERS][3];
+    private PhotonServerSocket pss;
     private JFrame frame;
 
+    public PlayerEntryScreen(PhotonServerSocket pss){
+
+	    this.pss = pss;
+
+    }
+	
     public void display() {
         JFrame frame = new JFrame("Laser Tag - Photon");
         frame.setSize(1000, 800);
@@ -404,7 +411,7 @@ public class PlayerEntryScreen {
         if (greenTeamPlayers.isEmpty() && redTeamPlayers.isEmpty()) {
             JOptionPane.showMessageDialog(dialog, "Players empty!", "Error", JOptionPane.ERROR_MESSAGE);
         } else {
-            PlayActionScreen playActionScreen = new PlayActionScreen(greenTeamPlayers, redTeamPlayers, equipmentMap);
+            PlayActionScreen playActionScreen = new PlayActionScreen(greenTeamPlayers, redTeamPlayers, equipmentMap, pss);
             playActionScreen.display();
         }
     }
