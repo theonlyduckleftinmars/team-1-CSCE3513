@@ -1,10 +1,8 @@
-package network;
-
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.Random;
-import java.util.Scanner;
+import java.util.ArrayList;
 
 public class TrafficGenerator {
 
@@ -15,18 +13,11 @@ public class TrafficGenerator {
 
     public static void main(String[] args) {
         try {
-            Scanner scanner = new Scanner(System.in);
 
-            System.out.println("This program will generate some test traffic for 2 players on the red team as well as 2 players on the green team\n");
+            System.out.println("This program will generate some test traffic players provided by user from UI inputs");
 
-            System.out.print("Enter equipment id of red player 1 ==> ");
-            String red1 = scanner.nextLine();
-            System.out.print("Enter equipment id of red player 2 ==> ");
-            String red2 = scanner.nextLine();
-            System.out.print("Enter equipment id of green player 1 ==> ");
-            String green1 = scanner.nextLine();
-            System.out.print("Enter equipment id of green player 2 ==> ");
-            String green2 = scanner.nextLine();
+            ArrayList<Integer> redTeam = new ArrayList<Integer>();
+            ArrayList<Integer> greenTeam = new ArrayList<Integer>();
 
             DatagramSocket receiveSocket = new DatagramSocket(SERVER_PORT);
             DatagramSocket sendSocket = new DatagramSocket();
@@ -41,6 +32,23 @@ public class TrafficGenerator {
                 receiveSocket.receive(receivePacket);
                 receivedData = new String(receivePacket.getData(), 0, receivePacket.getLength());
                 System.out.println("Received from game software: " + receivedData);
+
+                if (receivedData.contains(":")) {
+                    String player[] = receivedData.split(":");
+                    if (player.length == 2) {
+                        if(player[1].equals("0")){
+                            greenTeam.add(Integer.parseInt(player[0]));
+                        }else if(player[1].equals("1")){
+                            redTeam.add(Integer.parseInt(player[0]));
+                        }else{
+                            System.out.println("Player team ID does not match up with any of the teams " + receivedData);
+                        }
+                    }else{
+                        System.out.println("One of the inputs was for a player of improper length " + receivedData);
+                    }
+
+                }
+
             }
 
             System.out.println("");
@@ -49,21 +57,21 @@ public class TrafficGenerator {
             int counter = 0;
 
             while (true) {
-                String redPlayer = random.nextInt(2) == 0 ? red1 : red2;
-                String greenPlayer = random.nextInt(2) == 0 ? green1 : green2;
+                int redPlayerIndex = random.nextInt(redTeam.size());
+                int greenPlayerIndex = random.nextInt(greenTeam.size());
                 String message;
 
                 if (random.nextInt(2) == 0) {
-                    message = redPlayer + ":" + greenPlayer;
+                    message = redTeam.get(redPlayerIndex) + ":" + greenTeam.get(greenPlayerIndex);
                 } else {
-                    message = greenPlayer + ":" + redPlayer;
+                    message = greenTeam.get(greenPlayerIndex) + ":" + redTeam.get(redPlayerIndex);
                 }
 
                 if (counter == 10) {
-                    message = redPlayer + ":43";
+                    message = redTeam.get(redPlayerIndex) + ":43";
                 }
                 if (counter == 20) {
-                    message = greenPlayer + ":53";
+                    message = greenTeam.get(greenPlayerIndex) + ":53";
                 }
 
                 System.out.println("Transmitting to game: " + message);
