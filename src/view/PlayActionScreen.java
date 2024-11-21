@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Random;
-import javax.swing.JLabel;
 
 import javax.sound.sampled.*;
 import java.io.File;
@@ -28,6 +27,8 @@ public class PlayActionScreen {
 
 	private static final Color DARK_BACKGROUND = new Color(45, 45, 45);
 	private static final Color LIGHT_TEXT = new Color(200, 200, 200);
+
+	private PlayerEntryScreen pes;
 
 	private List<Player> greenTeamPlayers;
 	private List<Player> redTeamPlayers;
@@ -164,11 +165,9 @@ public class PlayActionScreen {
 		playerListPanel.setBackground(DARK_BACKGROUND);
 
 		for (Player player : players) {
-			JLabel playerLabel = new JLabel(
-					"ID: " + player.getId() + " | Codename: " + player.getCodeName() + " | Score: 100");
-			playerLabel.setForeground(LIGHT_TEXT);
-			playerLabel.setFont(new Font("Arial", Font.PLAIN, 18));
-			playerListPanel.add(playerLabel);
+			JPanel playerPanel = createPlayerPanel(player);
+			
+			playerListPanel.add(playerPanel);
 		}
 
 		teamPanel.add(playerListPanel, BorderLayout.CENTER);
@@ -180,6 +179,21 @@ public class PlayActionScreen {
 		}
 
 		return teamPanel;
+	}
+
+	private JPanel createPlayerPanel(Player player){
+		JPanel playerPanel = new JPanel();
+		playerPanel.setLayout(new FlowLayout());
+		playerPanel.setBackground(DARK_BACKGROUND);
+
+		JLabel playerLabel = new JLabel(
+					"ID: " + player.getId() + " | Codename: " + player.getCodeName() + " | Score: 100");
+		playerLabel.setForeground(LIGHT_TEXT);
+		playerLabel.setFont(new Font("Arial", Font.PLAIN, 18));
+
+		playerPanel.add(playerLabel);
+
+		return playerPanel;
 	}
 
 	private void playMusic() {
@@ -201,6 +215,8 @@ public class PlayActionScreen {
 			} catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
 				e.printStackTrace();
 			}
+		}else{
+			System.out.println("No music files were found");
 		}
 	}
 	private void stopMusic() {
@@ -242,14 +258,14 @@ public class PlayActionScreen {
 			for(int i = 0; i < greenTeamPlayers.size(); i++){	//sending out green team
 				
 				Player greenPlayer = greenTeamPlayers.get(i);
-				PhotonServerSocket.sendPlayer(greenPlayer.getId(), 0);
+				PhotonServerSocket.sendPlayer(Integer.parseInt(equipmentMap.get(greenPlayer.getId())), 0);
 			
 			}
 				
 			for(int i = 0; i < redTeamPlayers.size(); i++){		//sending out red team
 				
 				Player redPlayer = redTeamPlayers.get(i);
-				PhotonServerSocket.sendPlayer(redPlayer.getId(), 1);
+				PhotonServerSocket.sendPlayer(Integer.parseInt(equipmentMap.get(redPlayer.getId())), 1);
 
 			}
 
@@ -264,6 +280,14 @@ public class PlayActionScreen {
 			}
 
 			PhotonServerSocket.assignCode(221);
+
+			while(PhotonServerSocket.currentlyInExecution()){	//let last instruction finish before game ends
+				try{
+					Thread.sleep(100);
+				}catch(Exception e){
+					System.out.println("Exception thrown while waiting for last instruction to execute");
+				}
+			}
 
 			endGame();
 
@@ -286,6 +310,7 @@ public class PlayActionScreen {
 		redTeamPlayers.clear();
 
 		stopMusic();
+		PhotonServerSocket.RemoveBaseHitter();
 
 		SwingUtilities.invokeLater(() -> {
 			PlayerEntryScreen playerEntryScreen = new PlayerEntryScreen();
@@ -299,19 +324,38 @@ public class PlayActionScreen {
 	}
 
 
-	public void updateScores(int hitterId, int hitId, boolean isBaseHit) {
-		
+	public void updateScores(int HardwarehitterId, int HardwarehitId, boolean isBaseHit) {
+
 		int hitterScoreChange = isBaseHit ? 20 : 10;
+
+		int hitterId;
+		int hitId;
+
+		if(HardwarehitId != 43 && HardwarehitId != 53){
+			hitterId = findKeyByValue(equipmentMap, String.valueOf(HardwarehitterId));
+			hitId = findKeyByValue(equipmentMap, String.valueOf(HardwarehitId));
+			playerScores.put(hitId, playerScores.get(hitId) + -10);	//-10 points for being hit
+		}else{
+			hitterId = findKeyByValue(equipmentMap, String.valueOf(HardwarehitterId));
+		}
 
 		playerScores.put(hitterId, playerScores.get(hitterId) + hitterScoreChange);
 
-		if (!isBaseHit) {
-			playerScores.put(hitId, playerScores.get(hitId) + -10);	//-10 points for being hit
-		}
-
 		updateTeamScores();
 		updatePlayerPanels();
+
 	}
+
+	public Integer findKeyByValue(Map<Integer, String> map, String value) {
+
+        for (Map.Entry<Integer, String> entry : map.entrySet()) {
+            if (entry.getValue().equals(value)) {
+                return entry.getKey();
+            }
+        }
+
+        return null; // Return null if no match is found
+    }
 
 	private void updateTeamScores() {
 		greenTeamScore = greenTeamPlayers.stream().mapToInt(player -> playerScores.get(player.getId())).sum();
@@ -326,18 +370,96 @@ public class PlayActionScreen {
 	}
 
 	private void updatePlayerPanels() {
+
 		for (int i = 0; i < greenTeamPlayers.size(); i++) {
 			Player player = greenTeamPlayers.get(i);
 			int score = playerScores.get(player.getId());
-			JLabel playerLabel = (JLabel) greenTeamPlayerListPanel.getComponent(i);
-			playerLabel.setText("ID: " + player.getId() + " | Codename: " + player.getCodeName() + " | Score: " + score);
+
+			for(Component c : greenTeamPlayerListPanel.getComponents()){
+				JPanel playerPanel = (JPanel) c;
+				for(Component d : playerPanel.getComponents()){
+					if(d instanceof JLabel){
+						JLabel playerLabel = (JLabel) d;
+						playerLabel.setText("ID: " + player.getId() + " | Codename: " + player.getCodeName() + " | Score: " + score);
+					}
+				}
+			}
 		}
 		for (int i = 0; i < redTeamPlayers.size(); i++) {
 			Player player = redTeamPlayers.get(i);
 			int score = playerScores.get(player.getId());
-			JLabel playerLabel = (JLabel) redTeamPlayerListPanel.getComponent(i);
-			playerLabel.setText("ID: " + player.getId() + " | Codename: " + player.getCodeName() + " | Score: " + score);
+			
+			for(Component c : redTeamPlayerListPanel.getComponents()){
+				JPanel playerPanel = (JPanel) c;
+				for(Component d : playerPanel.getComponents()){
+					if(d instanceof JLabel){
+						JLabel playerLabel = (JLabel) d;
+						playerLabel.setText("ID: " + player.getId() + " | Codename: " + player.getCodeName() + " | Score: " + score);
+					}
+				}
+			}
 		}
+	}
+
+	public void addB(int team, int ID){	//team 0: green team 1: red
+
+		System.out.println("Someone hit the base looking to add stylized B");
+
+		int PlayerID = findKeyByValue(equipmentMap, String.valueOf(ID));
+
+		String filePath = "assets/B.png";
+		File file = new File(filePath);
+
+		if(file.exists()){
+
+			JLabel image = new JLabel(new ImageIcon(filePath));
+
+			if(team == 0){
+
+				JPanel playerPanel = searchForPlayer(greenTeamPlayerListPanel, PlayerID);
+				playerPanel.add(image, 0);
+				greenTeamPlayerListPanel.revalidate();
+				greenTeamPlayerListPanel.repaint();
+	
+			}else if(team == 1){
+	
+				JPanel playerPanel = searchForPlayer(redTeamPlayerListPanel, PlayerID);
+				playerPanel.add(image, 0);
+				redTeamPlayerListPanel.revalidate();
+				redTeamPlayerListPanel.repaint();
+	
+			}else{
+	
+				System.out.println("Trying to add bold B to a player that isn't on a recognized team");
+	
+			}
+
+		}else{
+
+			System.out.println("Was unable to find file for stylize B using file path " + filePath);
+
+		}
+
+	}
+
+	private JPanel searchForPlayer(JPanel playerListPanel, int ID){
+
+		for(Component c : playerListPanel.getComponents()){
+			if(c instanceof JPanel){
+
+				JPanel playerPanel = (JPanel) c;
+
+				for(Component innerc : playerPanel.getComponents()){
+					if(innerc instanceof JLabel){
+						JLabel player = (JLabel) innerc;
+						if(player.getText().contains("ID: " + ID)){
+							return playerPanel;
+						}
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 	private boolean isNumeric(String str) {
@@ -356,4 +478,5 @@ public class PlayActionScreen {
 		actionLogArea.append(action + "\n");
 		actionLogArea.setCaretPosition(actionLogArea.getDocument().getLength());
 	}
+
 }
