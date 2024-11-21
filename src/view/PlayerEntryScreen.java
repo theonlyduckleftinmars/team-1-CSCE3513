@@ -26,7 +26,6 @@ public class PlayerEntryScreen {
 
     private JTextField[][] greenTeamFields = new JTextField[NUM_PLAYERS][3];
     private JTextField[][] redTeamFields = new JTextField[NUM_PLAYERS][3];
-    private PhotonServerSocket pss;
     private JFrame frame;
 	
     public void display() {
@@ -390,7 +389,7 @@ public class PlayerEntryScreen {
                 greenTeamPlayers.add(greenPlayer);
                 equipmentMap.put(id, equipmentId); // Add equipment ID to the map
                 playerManager.insertPlayer(greenPlayer);
-                PhotonServerSocket.assignCode(id); //send out hardware ID of player to activate
+                PhotonServerSocket.assignCode(Integer.parseInt(equipmentId)); //send out hardware ID of player to activate
             }
             if (!redTeamFields[i][0].getText().isEmpty()) {
                 int id = Integer.parseInt(redTeamFields[i][0].getText());
@@ -400,18 +399,19 @@ public class PlayerEntryScreen {
                 redTeamPlayers.add(redPlayer);
                 equipmentMap.put(id, equipmentId); // Add equipment ID to the map
                 playerManager.insertPlayer(redPlayer);
-                PhotonServerSocket.assignCode(id); //send out hardware ID of player to activate
+                PhotonServerSocket.assignCode(Integer.parseInt(equipmentId)); //send out hardware ID of player to activate
             }
             
         }
         JDialog dialog = new JDialog(frame, "ERROR SUBMITTING PLAYERS", true);
 
-        if (greenTeamPlayers.isEmpty() && redTeamPlayers.isEmpty()) {
-            JOptionPane.showMessageDialog(dialog, "Players empty!", "Error", JOptionPane.ERROR_MESSAGE);
+        if (greenTeamPlayers.isEmpty() || redTeamPlayers.isEmpty()) {
+            JOptionPane.showMessageDialog(dialog, "One of the players teams are empty!", "Error", JOptionPane.ERROR_MESSAGE);
         } else {
             PlayActionScreen playActionScreen = new PlayActionScreen(greenTeamPlayers, redTeamPlayers, equipmentMap);
             PhotonServerSocket.assignPlayActionScreen(playActionScreen);
             playActionScreen.display();
         }
     }
+
 }
