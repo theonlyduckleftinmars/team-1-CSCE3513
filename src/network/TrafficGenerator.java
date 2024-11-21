@@ -1,6 +1,7 @@
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketTimeoutException;
 import java.util.Random;
 import java.util.ArrayList;
 
@@ -51,14 +52,18 @@ public class TrafficGenerator {
 
             }
 
+            System.out.println("Size of red team: " + redTeam.size() + " Size of green team: " + greenTeam.size());
+
             System.out.println("");
 
             Random random = new Random();
             int counter = 0;
 
             while (true) {
+                
                 int redPlayerIndex = random.nextInt(redTeam.size());
                 int greenPlayerIndex = random.nextInt(greenTeam.size());
+
                 String message;
 
                 if (random.nextInt(2) == 0) {
@@ -68,10 +73,10 @@ public class TrafficGenerator {
                 }
 
                 if (counter == 10) {
-                    message = redTeam.get(redPlayerIndex) + ":43";
+                    message = greenTeam.get(greenPlayerIndex) + ":53";
                 }
                 if (counter == 20) {
-                    message = greenTeam.get(greenPlayerIndex) + ":53";
+                    message = redTeam.get(redPlayerIndex) + ":43";
                 }
 
                 System.out.println("Transmitting to game: " + message);
@@ -80,10 +85,19 @@ public class TrafficGenerator {
                 DatagramPacket sendPacket = new DatagramPacket(sendBuffer, sendBuffer.length, InetAddress.getByName(SERVER_ADDRESS), CLIENT_PORT);
                 sendSocket.send(sendPacket);
 
-                receiveSocket.receive(receivePacket);
-                receivedData = new String(receivePacket.getData(), 0, receivePacket.getLength());
-                System.out.println("Received from game software: " + receivedData);
-                System.out.println("");
+                //wait for server to respond if it takes to long continue sending other data
+
+                try{
+                    receiveSocket.setSoTimeout(5000);
+                    receiveSocket.receive(receivePacket);
+                    receivedData = new String(receivePacket.getData(), 0, receivePacket.getLength());
+                    System.out.println("Received from game software: " + receivedData);
+                    System.out.println("");
+                }catch(SocketTimeoutException ste){
+    
+                    System.out.println("Spent to long waiting for a response from server done waiting and proceeding to send different data");
+    
+                }
 
                 counter++;
                 if (receivedData.equals("221")) {
@@ -91,6 +105,7 @@ public class TrafficGenerator {
                 }
 
                 Thread.sleep(random.nextInt(3) * 100);
+
             }
 
             System.out.println("Program complete");
